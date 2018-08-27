@@ -7,7 +7,7 @@ pub struct Product {
     pub id: i32,
     pub name: String,
     pub description: Option<String>,
-    pub stock: Option<f64>
+    pub stock: f64
 }
 
 impl Product {
