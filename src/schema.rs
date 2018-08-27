@@ -8,9 +8,9 @@ table! {
 table! {
     product_prices (id) {
         id -> Int4,
-        product_id -> Nullable<Int4>,
-        price_id -> Nullable<Int4>,
-        price -> Nullable<Int4>,
+        product_id -> Int4,
+        price_id -> Int4,
+        price -> Int4,
     }
 }
 
