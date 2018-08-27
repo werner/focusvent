@@ -6,7 +6,8 @@ use models::db_connection::*;
 pub struct Product {
     pub id: i32,
     pub name: String,
-    pub description: Option<String>
+    pub description: Option<String>,
+    pub stock: Option<f64>
 }
 
 impl Product {
