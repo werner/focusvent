@@ -17,7 +17,7 @@ pub fn index(client: Client) {
         .dispatch();
     assert_eq!(response.status(), Status::Ok);
 
-    response = client.get("/products").dispatch();
+    response = client.get("/products?offset=0&limit=10").dispatch();
     assert_eq!(response.status(), Status::Ok);
     let re = Regex::new(r#","name":"Shoe","description":"for the feet","stock":0.0},null"#).unwrap();
     assert!(re.is_match(&response.body_string().unwrap()));

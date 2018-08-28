@@ -1,11 +1,12 @@
+use handlers::base::GetTransactionParams;
 use rocket::response::status;
 use rocket::http::Status;
 use rocket_contrib::Json;
 use models::price::Price;
 
-#[get("/prices")]
-pub fn index() -> Result<Json<Vec<Price>>, status::Custom<String>> {
-    match Price::list(10, 0) {
+#[get("/prices?<params>")]
+pub fn index(params: GetTransactionParams) -> Result<Json<Vec<Price>>, status::Custom<String>> {
+    match Price::list(params.limit.unwrap_or(10), params.offset.unwrap_or(0)) {
         Ok(prices) => Ok(Json(prices)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
     }
