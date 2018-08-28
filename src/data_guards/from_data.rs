@@ -20,10 +20,10 @@ macro_rules! from_data {
                 let object: $type = match ::serde_json::from_str(&string_data) {
                     Ok(value) => value,
                     Err(err) => {
-                        println!("Error deserializing {:?}", &string_data);
+                        println!("Error deserializing {:#?} {:?}", &string_data, err);
                         return ::rocket::Outcome::Failure((
                             ::rocket::http::Status::BadRequest,
-                            format!("Error deserializing {:?}", err),
+                            format!("Error deserializing {:?} {:?}", &string_data, err),
                         ));
                     }
                 };
