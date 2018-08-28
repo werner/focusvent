@@ -5,10 +5,15 @@ use models::db_connection::*;
 use schema::prices;
 use schema::prices::dsl::*;
 
-#[derive(Serialize, Deserialize, Queryable, Insertable)]
-#[table_name="prices"]
+#[derive(Serialize, Deserialize, Queryable)]
 pub struct Price {
     pub id: i32,
+    pub name: String
+}
+
+#[derive(Serialize, Deserialize, Insertable)]
+#[table_name="prices"]
+pub struct NewPrice {
     pub name: String
 }
 
@@ -22,7 +27,7 @@ impl Price {
             .load::<Price>(&connection)
     }
 
-    pub fn create(price: Price) -> Result<Price, diesel::result::Error> {
+    pub fn create(price: NewPrice) -> Result<Price, diesel::result::Error> {
         let connection = establish_connection();
 
         diesel::insert_into(prices::table)
@@ -48,3 +53,4 @@ impl Price {
 }
 
 from_data!(Price);
+from_data!(NewPrice);

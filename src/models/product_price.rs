@@ -13,4 +13,10 @@ pub struct ProductPrice {
     pub price: i32
 }
 
+impl ProductPrice {
+    pub fn create() {
+        unimplemented!();
+    }
+}
+
 from_data!(ProductPrice);

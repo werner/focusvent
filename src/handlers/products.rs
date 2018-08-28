@@ -4,6 +4,7 @@ use rocket::http::Status;
 use rocket_contrib::Json;
 use models::product::Product;
 use models::product::NewProduct;
+use models::product::FullNewProduct;
 use models::price::Price;
 use models::product_price::ProductPrice;
 
@@ -16,7 +17,7 @@ pub fn index(params: GetTransactionParams) -> Result<Json<Vec<(Product, Option<(
 }
 
 #[post("/products", format="application/json", data="<product>")]
-pub fn create(product: NewProduct) -> Result<Json<Product>, status::Custom<String>> {
+pub fn create(product: FullNewProduct) -> Result<Json<Product>, status::Custom<String>> {
     match Product::create(product) {
         Ok(product) => Ok(Json(product)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
