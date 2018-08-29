@@ -27,15 +27,15 @@ pub struct NewProductPrice {
 }
 
 impl ProductPrice {
-    pub fn batch_create(hash_prices: HashMap<NewPrice, i32>, raw_product_id: i32) -> Result<bool, diesel::result::Error> {
+    pub fn batch_create(hash_prices: HashMap<String, i32>, raw_product_id: i32) -> Result<bool, diesel::result::Error> {
         let connection = establish_connection();
 
-        for (new_price, amount) in &hash_prices {
+        for (new_name_price, amount) in &hash_prices {
             let mut db_price: Option<Price> = None;
-            match prices.filter(name.eq(&new_price.name)).first(&connection) {
+            match prices.filter(name.eq(&new_name_price)).first(&connection) {
                 Ok(_price) => db_price = Some(_price),
                 Err(_) => {
-                    if let Ok(_price) = Price::create(NewPrice { name: (&new_price.name).to_string() }) {
+                    if let Ok(_price) = Price::create(NewPrice { name: (&new_name_price).to_string() }) {
                         db_price = Some(_price);
                     }
                 }

@@ -6,3 +6,5 @@ CREATE TABLE products (
     description TEXT NULL,
     stock DOUBLE PRECISION NOT NULL DEFAULT 0.0
 );
+
+CREATE UNIQUE INDEX products_name ON products (name);

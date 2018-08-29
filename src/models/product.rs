@@ -5,7 +5,6 @@ use diesel::prelude::*;
 use models::db_connection::*;
 use models::product_price::ProductPrice;
 use models::price::Price;
-use models::price::NewPrice;
 use schema::product_prices::dsl::*;
 use schema::prices::dsl::*;
 use schema::products;
@@ -29,19 +28,19 @@ pub struct NewProduct {
 #[derive(Serialize, Deserialize)]
 pub struct FullNewProduct {
     product: NewProduct,
-    prices: HashMap<NewPrice, i32>
+    prices: HashMap<String, i32>
 }
 
 impl Product {
-    pub fn list(limit: i64, offset: i64) -> Result<Vec<(Product, Option<(ProductPrice, Price)>)>, diesel::result::Error> {
+    pub fn list(limit: i64, offset: i64) -> Result<Vec<(Product, Option<(ProductPrice, Option<Price>)>)>, diesel::result::Error> {
         use schema::products::dsl::*;
 
         let connection = establish_connection();
         products
-            .left_join(product_prices.inner_join(prices))
+            .left_join(product_prices.left_join(prices))
             .limit(limit)
             .offset(offset)
-            .load::<(Product, Option<(ProductPrice, Price)>)>(&connection)
+            .load::<(Product, Option<(ProductPrice, Option<Price>)>)>(&connection)
     }
 
     pub fn create(full_new_product: FullNewProduct) -> Result<Product, diesel::result::Error> {
