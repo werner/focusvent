@@ -1,13 +1,12 @@
 use std::io::Read;
+use std::collections::HashMap;
 use diesel;
 use diesel::prelude::*;
 use models::db_connection::*;
 use models::product_price::ProductPrice;
 use models::price::Price;
 use models::price::NewPrice;
-use schema::product_prices;
 use schema::product_prices::dsl::*;
-use schema::prices;
 use schema::prices::dsl::*;
 use schema::products;
 use schema::products::dsl::*;
@@ -30,7 +29,7 @@ pub struct NewProduct {
 #[derive(Serialize, Deserialize)]
 pub struct FullNewProduct {
     product: NewProduct,
-    price: Option<Price>
+    prices: HashMap<NewPrice, i32>
 }
 
 impl Product {
@@ -53,21 +52,7 @@ impl Product {
             .get_result(&connection);
 
         if let Ok(db_product) = &product {
-            if let Some(raw_price) = full_new_product.price {
-                match prices.find(raw_price.id).first(&connection) {
-                    Ok(_price) => {
-                        let db_price: Price = _price;
-                        let product_price: Result<ProductPrice, diesel::result::Error> =
-                            product_prices.filter(product_id.eq(db_product.id).and(price_id.eq(db_price.id))).first(&connection);
-                        if let Err(_err) = product_price {
-                            ProductPrice::create();
-                        }
-                    },
-                    Err(_) => {
-                        Price::create(NewPrice { name: raw_price.name });
-                    }
-                }
-            }
+            ProductPrice::batch_create(full_new_product.prices, db_product.id)?;
         }
 
         product

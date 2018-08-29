@@ -11,8 +11,11 @@ pub fn index(client: Client) {
         .post("/products")
         .header(ContentType::JSON)
         .body(r#"{
-            "name": "Shoe",
-            "description": "for the feet"
+            "product": {
+                "name": "Shoe",
+                "description": "for the feet"
+            },
+            "prices": {}
         }"#)
         .dispatch();
     assert_eq!(response.status(), Status::Ok);

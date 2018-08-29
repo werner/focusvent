@@ -3,7 +3,6 @@ use rocket::response::status;
 use rocket::http::Status;
 use rocket_contrib::Json;
 use models::product::Product;
-use models::product::NewProduct;
 use models::product::FullNewProduct;
 use models::price::Price;
 use models::product_price::ProductPrice;
