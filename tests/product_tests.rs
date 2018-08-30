@@ -39,7 +39,8 @@ fn create_product_with_price(client: &Client) {
                 "description": "for the head"
             },
             "prices": {
-                "default": 1234
+                "default": 1234,
+                "max": 5093
             }
         }"#)
         .dispatch();
@@ -55,6 +56,7 @@ pub fn index(client: Client, connection: &PgConnection) {
     create_product_with_price(&client);
     let mut response = client.get("/products?offset=0&limit=10").dispatch();
     assert_eq!(response.status(), Status::Ok);
+    println!("{:?}", &response.body_string().unwrap());
     let re = Regex::new(r#"[[{"id":\d+,"name":"Shoe","description":"for the feet","stock":0.0},null],
                            [{"id":\d+,"name":"Hat","description":"for the head","stock":0.0},
                            [{"id":\d+,"product_id":\d+,"price_id":\d+,"price":1234},{"id":\d+,"name":"default"}]]]"#).unwrap();
