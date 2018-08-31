@@ -2,13 +2,12 @@ use handlers::base::GetTransactionParams;
 use rocket::response::status;
 use rocket::http::Status;
 use rocket_contrib::Json;
+use models::product::FullProduct;
 use models::product::Product;
 use models::product::FullNewProduct;
-use models::price::Price;
-use models::product_price::ProductPrice;
 
 #[get("/products?<params>")]
-pub fn index(params: GetTransactionParams) -> Result<Json<Vec<(Product, Option<(ProductPrice, Option<Price>)>)>>, status::Custom<String>> {
+pub fn index(params: GetTransactionParams) -> Result<Json<Vec<Product>>, status::Custom<String>> {
     match Product::list(params.limit.unwrap_or(10), params.offset.unwrap_or(0)) {
         Ok(products) => Ok(Json(products)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))

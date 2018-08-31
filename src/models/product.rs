@@ -10,7 +10,7 @@ use schema::prices::dsl::*;
 use schema::products;
 use schema::products::dsl::*;
 
-#[derive(Serialize, Deserialize, Queryable)]
+#[derive(Serialize, Deserialize, Clone, Queryable)]
 pub struct Product {
     pub id: i32,
     pub name: String,
@@ -31,16 +31,49 @@ pub struct FullNewProduct {
     prices: HashMap<String, i32>
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct FullProduct {
+    product: Product,
+    prices: HashMap<String, i32>
+}
+
 impl Product {
-    pub fn list(limit: i64, offset: i64) -> Result<Vec<(Product, Option<(ProductPrice, Option<Price>)>)>, diesel::result::Error> {
+    pub fn list(limit: i64, offset: i64) -> Result<Vec<Product>, diesel::result::Error> {
         use schema::products::dsl::*;
 
+        let mut full_products: Vec<FullProduct> = vec![];
         let connection = establish_connection();
         products
-            .left_join(product_prices.left_join(prices))
             .limit(limit)
             .offset(offset)
-            .load::<(Product, Option<(ProductPrice, Option<Price>)>)>(&connection)
+            .order(id.asc())
+            .load(&connection)
+    }
+
+    pub fn show(request_id: i32) -> Result<FullProduct, diesel::result::Error> {
+        use schema::products::dsl::*;
+
+        let mut full_product: FullProduct =
+            FullProduct { 
+                product: Product::blank_product(),
+                prices: HashMap::new()
+            };
+        let connection = establish_connection();
+        let vec_products = products
+            .find(request_id)
+            .left_join(product_prices.left_join(prices))
+            .order(id.asc())
+            .load::<(Product, Option<(ProductPrice, Option<Price>)>)>(&connection)?;
+
+        for (index, db_full_product) in vec_products.into_iter().enumerate() {
+            if index == 0 {
+                full_product.product = db_full_product.0;
+            }
+            if let Some(_prices) = db_full_product.1 {
+                full_product.prices.insert(_prices.1.unwrap().name, _prices.0.price);
+            };
+        }
+        Ok(full_product)
     }
 
     pub fn create(full_new_product: FullNewProduct) -> Result<Product, diesel::result::Error> {
@@ -72,6 +105,15 @@ impl Product {
 
         diesel::delete(products.find(param_id))
             .execute(&connection)
+    }
+
+    fn blank_product() -> Product {
+        Product {
+            id: 0,
+            name: "".to_string(),
+            description: None,
+            stock: 0.0
+        }
     }
 }
 
