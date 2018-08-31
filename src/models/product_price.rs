@@ -1,5 +1,5 @@
 use std::io::Read;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use diesel;
 use diesel::RunQueryDsl;
 use diesel::QueryDsl;
@@ -36,15 +36,15 @@ enum Action {
 }
 
 impl ProductPrice {
-    pub fn batch_create(hash_prices: HashMap<String, i32>, raw_product_id: i32) -> Result<bool, diesel::result::Error> {
+    pub fn batch_create(hash_prices: BTreeMap<String, i32>, raw_product_id: i32) -> Result<bool, diesel::result::Error> {
         ProductPrice::batch_action(Action::Create, hash_prices, raw_product_id)
     }
 
-    pub fn batch_update(hash_prices: HashMap<String, i32>, raw_product_id: i32) -> Result<bool, diesel::result::Error> {
+    pub fn batch_update(hash_prices: BTreeMap<String, i32>, raw_product_id: i32) -> Result<bool, diesel::result::Error> {
         ProductPrice::batch_action(Action::Update, hash_prices, raw_product_id)
     }
 
-    fn batch_action(action: Action, hash_prices: HashMap<String, i32>, raw_product_id: i32) -> Result<bool, diesel::result::Error> {
+    fn batch_action(action: Action, hash_prices: BTreeMap<String, i32>, raw_product_id: i32) -> Result<bool, diesel::result::Error> {
         let connection = establish_connection();
 
         for (new_name_price, amount) in &hash_prices {

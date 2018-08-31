@@ -23,5 +23,6 @@ mod test {
         let connection = establish_connection();
         product_tests::index(&client, &connection);
         product_tests::show(&client, &connection);
+        product_tests::update(&client);
     }
 }

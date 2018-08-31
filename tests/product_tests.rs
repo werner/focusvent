@@ -49,6 +49,26 @@ fn create_product_with_price(client: &Client) -> Product {
     serde_json::from_str(&response.body_string().unwrap()).unwrap()
 }
 
+pub fn update(client: &Client) {
+    let product = create_product(client);
+    let response = client
+        .put(format!("/products/{}", product.id))
+        .header(ContentType::JSON)
+        .body(format!(r#"{{
+            "product": {{
+                "id": {},
+                "name": "Shoes",
+                "description": "for the feet"
+            }},
+            "prices": {{}}
+        }}"#, product.id))
+        .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    let mut response = client.get(format!("/products/{}", product.id)).dispatch();
+    assert_eq!(Some(format!(r#"{{"product":{{"id":{},"name":"Shoes","description":"for the feet","stock":0.0}},"prices":{{}}}}"#, product.id)),
+               response.body_string());
+}
+
 pub fn index(client: &Client, connection: &PgConnection) {
     diesel::delete(product_prices).execute(connection).unwrap();
     diesel::delete(products).execute(connection).unwrap();

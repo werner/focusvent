@@ -1,5 +1,5 @@
 use std::io::Read;
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 use diesel;
 use diesel::prelude::*;
 use models::db_connection::*;
@@ -15,7 +15,7 @@ pub struct Product {
     pub id: i32,
     pub name: String,
     pub description: Option<String>,
-    pub stock: f64
+    pub stock: Option<f64>
 }
 
 #[derive(Serialize, Deserialize, Insertable)]
@@ -28,13 +28,13 @@ pub struct NewProduct {
 #[derive(Serialize, Deserialize)]
 pub struct FullNewProduct {
     product: NewProduct,
-    prices: HashMap<String, i32>
+    prices: BTreeMap<String, i32>
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct FullProduct {
     product: Product,
-    prices: HashMap<String, i32>
+    prices: BTreeMap<String, i32>
 }
 
 impl Product {
@@ -50,18 +50,16 @@ impl Product {
 
     pub fn show(request_id: i32) -> Result<FullProduct, diesel::result::Error> {
         use schema::products::dsl::*;
-        use schema::prices::dsl::name;
 
         let connection = establish_connection();
         let mut full_product: FullProduct =
             FullProduct { 
                 product: Product::blank_product(),
-                prices: HashMap::new()
+                prices: BTreeMap::new()
             };
         let vec_products = products
             .find(request_id)
             .left_join(product_prices.left_join(prices))
-            .order(name.asc())
             .load::<(Product, Option<(ProductPrice, Option<Price>)>)>(&connection)?;
 
         for (index, db_full_product) in vec_products.into_iter().enumerate() {
@@ -117,7 +115,7 @@ impl Product {
             id: 0,
             name: "".to_string(),
             description: None,
-            stock: 0.0
+            stock: None
         }
     }
 }

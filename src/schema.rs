@@ -19,7 +19,7 @@ table! {
         id -> Int4,
         name -> Varchar,
         description -> Nullable<Text>,
-        stock -> Float8,
+        stock -> Nullable<Float8>,
     }
 }
 
