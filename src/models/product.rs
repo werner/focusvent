@@ -41,12 +41,10 @@ impl Product {
     pub fn list(limit: i64, offset: i64) -> Result<Vec<Product>, diesel::result::Error> {
         use schema::products::dsl::*;
 
-        let mut full_products: Vec<FullProduct> = vec![];
         let connection = establish_connection();
         products
             .limit(limit)
             .offset(offset)
-            .order(id.asc())
             .load(&connection)
     }
 
@@ -90,14 +88,20 @@ impl Product {
         product
     }
 
-    pub fn update(param_id: i32, product: Product) -> Result<Product, diesel::result::Error> {
+    pub fn update(param_id: i32, full_product: FullProduct) -> Result<Product, diesel::result::Error> {
         use schema::products::dsl::name;
         let connection = establish_connection();
 
-        diesel::update(products.find(param_id))
-            .set((name.eq(product.name),
-                  description.eq(product.description)))
-            .get_result::<Product>(&connection)
+        let product = diesel::update(products.find(param_id))
+            .set((name.eq(full_product.product.name),
+                  description.eq(full_product.product.description)))
+            .get_result::<Product>(&connection);
+
+        if let Ok(db_product) = &product {
+            ProductPrice::batch_update(full_product.prices, db_product.id)?;
+        }
+
+        product
     }
 
     pub fn delete(param_id: i32) -> Result<usize, diesel::result::Error> {
@@ -120,3 +124,4 @@ impl Product {
 from_data!(Product);
 from_data!(NewProduct);
 from_data!(FullNewProduct);
+from_data!(FullProduct);

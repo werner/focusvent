@@ -4,6 +4,7 @@ use rocket;
 
 pub fn routes() -> Vec<rocket::Route> {
     routes![products::index,
+            products::show,
             products::create,
             products::update,
             products::delete,

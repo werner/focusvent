@@ -14,6 +14,14 @@ pub fn index(params: GetTransactionParams) -> Result<Json<Vec<Product>>, status:
     }
 }
 
+#[get("/products/<id>", format="application/json")]
+pub fn show(id: i32) -> Result<Json<FullProduct>, status::Custom<String>> {
+    match Product::show(id) {
+        Ok(product) => Ok(Json(product)),
+        Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
+    }
+}
+
 #[post("/products", format="application/json", data="<product>")]
 pub fn create(product: FullNewProduct) -> Result<Json<Product>, status::Custom<String>> {
     match Product::create(product) {
@@ -23,7 +31,7 @@ pub fn create(product: FullNewProduct) -> Result<Json<Product>, status::Custom<S
 }
 
 #[put("/products/<id>", format="application/json", data="<product>")]
-pub fn update(id: i32, product: Product) -> Result<Json<Product>, status::Custom<String>> {
+pub fn update(id: i32, product: FullProduct) -> Result<Json<Product>, status::Custom<String>> {
     match Product::update(id, product) {
         Ok(product) => Ok(Json(product)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
