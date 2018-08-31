@@ -51,12 +51,12 @@ impl Product {
     pub fn show(request_id: i32) -> Result<FullProduct, diesel::result::Error> {
         use schema::products::dsl::*;
 
+        let connection = establish_connection();
         let mut full_product: FullProduct =
             FullProduct { 
                 product: Product::blank_product(),
                 prices: HashMap::new()
             };
-        let connection = establish_connection();
         let vec_products = products
             .find(request_id)
             .left_join(product_prices.left_join(prices))
@@ -69,7 +69,7 @@ impl Product {
             }
             if let Some(_prices) = db_full_product.1 {
                 full_product.prices.insert(_prices.1.unwrap().name, _prices.0.price);
-            };
+            }
         }
         Ok(full_product)
     }
