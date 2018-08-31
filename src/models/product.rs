@@ -50,6 +50,7 @@ impl Product {
 
     pub fn show(request_id: i32) -> Result<FullProduct, diesel::result::Error> {
         use schema::products::dsl::*;
+        use schema::prices::dsl::name;
 
         let connection = establish_connection();
         let mut full_product: FullProduct =
