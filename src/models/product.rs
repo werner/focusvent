@@ -60,7 +60,7 @@ impl Product {
         let vec_products = products
             .find(request_id)
             .left_join(product_prices.left_join(prices))
-            .order(id.asc())
+            .order(name.asc())
             .load::<(Product, Option<(ProductPrice, Option<Price>)>)>(&connection)?;
 
         for (index, db_full_product) in vec_products.into_iter().enumerate() {
