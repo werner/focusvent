@@ -14,6 +14,7 @@ use focusvent::models::product::Product;
 use focusvent::schema::products::dsl::*;
 use focusvent::schema::prices::dsl::*;
 use focusvent::schema::product_prices::dsl::*;
+use focusvent::schema::product_costs::dsl::*;
 
 fn create_product(client: &Client) -> Product {
     let mut response = client
@@ -24,7 +25,8 @@ fn create_product(client: &Client) -> Product {
                 "name": "Shoe",
                 "description": "for the feet"
             },
-            "prices": {}
+            "prices": {},
+            "costs": {}
         }"#)
         .dispatch();
     assert_eq!(response.status(), Status::Ok);
@@ -43,6 +45,10 @@ fn create_product_with_price(client: &Client) -> Product {
             "prices": {
                 "default": 1234,
                 "max": 5093
+            },
+            "costs": {
+                "better": 1234,
+                "not sure": 5678
             }
         }"#)
         .dispatch();
@@ -60,16 +66,18 @@ pub fn update(client: &Client) {
                 "name": "Shoes",
                 "description": "for the feet"
             }},
-            "prices": {{}}
+            "prices": {{}},
+            "costs": {{}}
         }}"#, product.id))
         .dispatch();
     assert_eq!(response.status(), Status::Ok);
     let mut response = client.get(format!("/products/{}", product.id)).dispatch();
-    assert_eq!(Some(format!(r#"{{"product":{{"id":{},"name":"Shoes","description":"for the feet","stock":0.0}},"prices":{{}}}}"#, product.id)),
+    assert_eq!(Some(format!(r#"{{"product":{{"id":{},"name":"Shoes","description":"for the feet","stock":0.0}},"prices":{{}},"costs":{{}}}}"#, product.id)),
                response.body_string());
 }
 
 pub fn index(client: &Client, connection: &PgConnection) {
+    diesel::delete(product_costs).execute(connection).unwrap();
     diesel::delete(product_prices).execute(connection).unwrap();
     diesel::delete(products).execute(connection).unwrap();
     diesel::delete(prices).execute(connection).unwrap();
@@ -84,6 +92,7 @@ pub fn index(client: &Client, connection: &PgConnection) {
 }
 
 pub fn show(client: &Client, connection: &PgConnection) {
+    diesel::delete(product_costs).execute(connection).unwrap();
     diesel::delete(product_prices).execute(connection).unwrap();
     diesel::delete(products).execute(connection).unwrap();
     diesel::delete(prices).execute(connection).unwrap();
@@ -91,6 +100,6 @@ pub fn show(client: &Client, connection: &PgConnection) {
     let product = create_product_with_price(client);
     let mut response = client.get(format!("/products/{}", product.id)).dispatch();
     assert_eq!(response.status(), Status::Ok);
-    assert_eq!(Some(format!(r#"{{"product":{{"id":{},"name":"Hat","description":"for the head","stock":0.0}},"prices":{{"default":1234,"max":5093}}}}"#, product.id)),
+    assert_eq!(Some(format!(r#"{{"product":{{"id":{},"name":"Hat","description":"for the head","stock":0.0}},"prices":{{"default":1234,"max":5093}},"costs":{{"better":1234,"not sure":5678}}}}"#, product.id)),
                response.body_string());
 }

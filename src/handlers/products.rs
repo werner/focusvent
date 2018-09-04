@@ -18,7 +18,10 @@ pub fn index(params: GetTransactionParams) -> Result<Json<Vec<Product>>, status:
 pub fn show(id: i32) -> Result<Json<FullProduct>, status::Custom<String>> {
     match Product::show(id) {
         Ok(product) => Ok(Json(product)),
-        Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
+        Err(error) => {
+            println!("{:?}", error);
+            Err(status::Custom(Status::InternalServerError, error.to_string()))
+        }
     }
 }
 

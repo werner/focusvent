@@ -7,6 +7,10 @@ use models::product_price::ProductPrice;
 use models::price::Price;
 use schema::product_prices::dsl::*;
 use schema::prices::dsl::*;
+use models::product_cost::ProductCost;
+use models::cost::Cost;
+use schema::product_costs::dsl::*;
+use schema::costs::dsl::*;
 use schema::products;
 use schema::products::dsl::*;
 
@@ -28,13 +32,15 @@ pub struct NewProduct {
 #[derive(Serialize, Deserialize)]
 pub struct FullNewProduct {
     product: NewProduct,
-    prices: BTreeMap<String, i32>
+    prices: BTreeMap<String, i32>,
+    costs: BTreeMap<String, i32>
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct FullProduct {
     product: Product,
-    prices: BTreeMap<String, i32>
+    prices: BTreeMap<String, i32>,
+    costs: BTreeMap<String, i32>
 }
 
 impl Product {
@@ -55,12 +61,14 @@ impl Product {
         let mut full_product: FullProduct =
             FullProduct { 
                 product: Product::blank_product(),
-                prices: BTreeMap::new()
+                prices: BTreeMap::new(),
+                costs: BTreeMap::new()
             };
         let vec_products = products
             .find(request_id)
             .left_join(product_prices.left_join(prices))
-            .load::<(Product, Option<(ProductPrice, Option<Price>)>)>(&connection)?;
+            .left_join(product_costs.left_join(costs))
+            .load::<(Product, Option<(ProductPrice, Option<Price>)>, Option<(ProductCost, Option<Cost>)>)>(&connection)?;
 
         for (index, db_full_product) in vec_products.into_iter().enumerate() {
             if index == 0 {
@@ -68,6 +76,9 @@ impl Product {
             }
             if let Some(_prices) = db_full_product.1 {
                 full_product.prices.insert(_prices.1.unwrap().name, _prices.0.price);
+            }
+            if let Some(_costs) = db_full_product.2 {
+                full_product.costs.insert(_costs.1.unwrap().name, _costs.0.cost);
             }
         }
         Ok(full_product)
@@ -82,6 +93,7 @@ impl Product {
 
         if let Ok(db_product) = &product {
             ProductPrice::batch_create(full_new_product.prices, db_product.id)?;
+            ProductCost::batch_create(full_new_product.costs, db_product.id)?;
         }
 
         product
@@ -98,6 +110,7 @@ impl Product {
 
         if let Ok(db_product) = &product {
             ProductPrice::batch_update(full_product.prices, db_product.id)?;
+            ProductCost::batch_update(full_product.costs, db_product.id)?;
         }
 
         product

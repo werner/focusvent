@@ -1,5 +1,6 @@
 use handlers::products;
 use handlers::prices;
+use handlers::costs;
 use rocket;
 
 pub fn routes() -> Vec<rocket::Route> {
@@ -12,5 +13,10 @@ pub fn routes() -> Vec<rocket::Route> {
             prices::show,
             prices::create,
             prices::update,
-            prices::delete]
+            prices::delete,
+            costs::index,
+            costs::show,
+            costs::create,
+            costs::update,
+            costs::delete]
 }
