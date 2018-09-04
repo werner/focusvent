@@ -4,6 +4,7 @@ use rocket::http::Status;
 use rocket_contrib::Json;
 use models::price::Price;
 use models::price::NewPrice;
+use models::price::Taxonomy;
 
 #[get("/prices?<params>")]
 pub fn index(params: GetTransactionParams) -> Result<Json<Vec<Price>>, status::Custom<String>> {
@@ -16,6 +17,14 @@ pub fn index(params: GetTransactionParams) -> Result<Json<Vec<Price>>, status::C
 #[post("/prices", format="application/json", data="<price>")]
 pub fn create(price: NewPrice) -> Result<Json<Price>, status::Custom<String>> {
     match Price::create(price) {
+        Ok(price) => Ok(Json(price)),
+        Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
+    }
+}
+
+#[get("/prices/<id>", format="application/json")]
+pub fn show(id: i32) -> Result<Json<Price>, status::Custom<String>> {
+    match Price::show(id) {
         Ok(price) => Ok(Json(price)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
     }

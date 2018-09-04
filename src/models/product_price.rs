@@ -9,6 +9,7 @@ use diesel::pg::PgConnection;
 use schema::product_prices;
 use schema::product_prices::dsl::*;
 use schema::prices::dsl::*;
+use models::price::Taxonomy;
 use models::price::NewPrice;
 use models::price::Price;
 use models::db_connection::*;

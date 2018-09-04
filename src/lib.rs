@@ -17,4 +17,5 @@ pub mod routes;
 pub mod schema;
 #[macro_use]
 pub mod data_guards;
+#[macro_use]
 pub mod models;

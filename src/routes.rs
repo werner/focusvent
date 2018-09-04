@@ -9,6 +9,7 @@ pub fn routes() -> Vec<rocket::Route> {
             products::update,
             products::delete,
             prices::index,
+            prices::show,
             prices::create,
             prices::update,
             prices::delete]

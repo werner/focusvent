@@ -16,6 +16,7 @@ mod schema;
 mod handlers;
 #[macro_use]
 mod data_guards;
+#[macro_use]
 mod models;
 mod routes;
 
