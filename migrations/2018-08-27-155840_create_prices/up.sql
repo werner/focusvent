@@ -5,6 +5,8 @@ CREATE TABLE prices (
     name VARCHAR NOT NULL
 );
 
+CREATE INDEX prices_name_idx ON prices (name varchar_pattern_ops);
+
 CREATE TABLE product_prices (
     id SERIAL PRIMARY KEY,
     product_id INTEGER NOT NULL REFERENCES products(id),

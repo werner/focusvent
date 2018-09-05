@@ -1,3 +1,4 @@
 -- This file should undo anything in `up.sql`
 
-DROP TABLE costs;
+DROP TABLE product_costs;
+DROP TABLE suppliers;

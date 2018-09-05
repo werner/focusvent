@@ -19,6 +19,7 @@ pub struct ProductCost {
     pub id: i32,
     pub product_id: i32,
     pub cost_id: i32,
+    pub supplier_id: i32,
     pub cost: i32
 }
 
@@ -27,6 +28,7 @@ pub struct ProductCost {
 pub struct NewProductCost {
     pub product_id: i32,
     pub cost_id: i32,
+    pub supplier_id: i32,
     pub cost: i32
 }
 

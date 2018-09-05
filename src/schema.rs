@@ -17,6 +17,7 @@ table! {
         id -> Int4,
         product_id -> Int4,
         cost_id -> Int4,
+        supplier_id -> Int4,
         cost -> Int4,
     }
 }
@@ -39,8 +40,20 @@ table! {
     }
 }
 
+table! {
+    suppliers (id) {
+        id -> Int4,
+        first_name -> Nullable<Varchar>,
+        last_name -> Nullable<Varchar>,
+        company_name -> Nullable<Varchar>,
+        email -> Nullable<Varchar>,
+        phone -> Nullable<Varchar>,
+    }
+}
+
 joinable!(product_costs -> costs (cost_id));
 joinable!(product_costs -> products (product_id));
+joinable!(product_costs -> suppliers (supplier_id));
 joinable!(product_prices -> prices (price_id));
 joinable!(product_prices -> products (product_id));
 
@@ -50,4 +63,5 @@ allow_tables_to_appear_in_same_query!(
     product_costs,
     product_prices,
     products,
+    suppliers,
 );
