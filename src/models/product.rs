@@ -8,13 +8,15 @@ use models::price::Price;
 use schema::product_prices::dsl::*;
 use schema::prices::dsl::*;
 use models::product_cost::ProductCost;
+use models::product_cost::EditableProductCost;
+use models::product_cost::EditableProductSupplierCost;
 use models::cost::Cost;
 use schema::product_costs::dsl::*;
 use schema::costs::dsl::*;
 use schema::products;
 use schema::products::dsl::*;
 
-#[derive(Serialize, Deserialize, Clone, Queryable)]
+#[derive(Serialize, Deserialize, Clone, Queryable, Debug)]
 pub struct Product {
     pub id: i32,
     pub name: String,
@@ -22,25 +24,25 @@ pub struct Product {
     pub stock: Option<f64>
 }
 
-#[derive(Serialize, Deserialize, Insertable)]
+#[derive(Serialize, Deserialize, Insertable, Debug, Clone)]
 #[table_name="products"]
 pub struct NewProduct {
     pub name: String,
     pub description: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct FullNewProduct {
     product: NewProduct,
     prices: BTreeMap<String, i32>,
-    costs: BTreeMap<String, i32>
+    costs: Vec<EditableProductSupplierCost>
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct FullProduct {
     product: Product,
     prices: BTreeMap<String, i32>,
-    costs: BTreeMap<String, i32>
+    costs: Vec<EditableProductSupplierCost>
 }
 
 impl Product {
@@ -62,7 +64,7 @@ impl Product {
             FullProduct { 
                 product: Product::blank_product(),
                 prices: BTreeMap::new(),
-                costs: BTreeMap::new()
+                costs: vec![]
             };
         let vec_products = products
             .find(request_id)
@@ -78,7 +80,7 @@ impl Product {
                 full_product.prices.insert(_prices.1.unwrap().name, _prices.0.price);
             }
             if let Some(_costs) = db_full_product.2 {
-                full_product.costs.insert(_costs.1.unwrap().name, _costs.0.cost);
+                full_product.costs.push(_costs.0.mapped_to_editable_suppler_product_cost());
             }
         }
         Ok(full_product)
@@ -93,7 +95,7 @@ impl Product {
 
         if let Ok(db_product) = &product {
             ProductPrice::batch_create(full_new_product.prices, db_product.id)?;
-            ProductCost::batch_create(full_new_product.costs, db_product.id)?;
+            ProductCost::batch_action(full_new_product.costs, db_product.id)?;
         }
 
         product
@@ -110,7 +112,7 @@ impl Product {
 
         if let Ok(db_product) = &product {
             ProductPrice::batch_update(full_product.prices, db_product.id)?;
-            ProductCost::batch_update(full_product.costs, db_product.id)?;
+            ProductCost::batch_action(full_product.costs, db_product.id)?;
         }
 
         product

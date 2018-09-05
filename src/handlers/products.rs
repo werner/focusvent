@@ -18,16 +18,13 @@ pub fn index(params: GetTransactionParams) -> Result<Json<Vec<Product>>, status:
 pub fn show(id: i32) -> Result<Json<FullProduct>, status::Custom<String>> {
     match Product::show(id) {
         Ok(product) => Ok(Json(product)),
-        Err(error) => {
-            println!("{:?}", error);
-            Err(status::Custom(Status::InternalServerError, error.to_string()))
-        }
+        Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
     }
 }
 
 #[post("/products", format="application/json", data="<product>")]
 pub fn create(product: FullNewProduct) -> Result<Json<Product>, status::Custom<String>> {
-    match Product::create(product) {
+    match Product::create(product.clone()) {
         Ok(product) => Ok(Json(product)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
     }
