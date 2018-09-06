@@ -5,12 +5,11 @@ use diesel::prelude::*;
 use models::db_connection::*;
 use models::product_price::ProductPrice;
 use models::price::Price;
-use schema::product_prices::dsl::*;
 use schema::prices::dsl::*;
 use models::product_cost::ProductCost;
 use models::product_cost::EditableProductSupplierCost;
 use models::cost::Cost;
-use schema::product_costs::dsl::*;
+use models::supplier::Supplier;
 use schema::costs::dsl::*;
 use schema::products;
 use schema::products::dsl::*;
@@ -39,9 +38,9 @@ pub struct FullNewProduct {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FullProduct {
-    product: Product,
-    prices: BTreeMap<String, i32>,
-    costs: Vec<EditableProductSupplierCost>
+    pub product: Product,
+    pub prices: Vec<(ProductPrice, Price)>,
+    pub costs: Vec<(ProductCost, Cost, Supplier)>
 }
 
 impl Product {
@@ -57,29 +56,42 @@ impl Product {
 
     pub fn show(request_id: i32) -> Result<FullProduct, diesel::result::Error> {
         use schema::products::dsl::*;
+        use schema::product_prices;
+        use schema::product_costs;
+        use schema::suppliers;
 
         let connection = establish_connection();
         let mut full_product: FullProduct =
             FullProduct { 
                 product: Product::blank_product(),
-                prices: BTreeMap::new(),
+                prices: vec![],
                 costs: vec![]
             };
         let vec_products = products
             .find(request_id)
-            .left_join(product_prices.left_join(prices))
-            .left_join(product_costs.left_join(costs))
-            .load::<(Product, Option<(ProductPrice, Option<Price>)>, Option<(ProductCost, Option<Cost>)>)>(&connection)?;
+            .load::<Product>(&connection)?;
 
-        for (index, db_full_product) in vec_products.into_iter().enumerate() {
-            if index == 0 {
-                full_product.product = db_full_product.0;
+        for db_product in vec_products.into_iter() {
+
+            let vec_product_costs = product_costs::dsl::product_costs
+                .filter(product_costs::dsl::product_id.eq(db_product.id))
+                .inner_join(costs)
+                .inner_join(suppliers::dsl::suppliers)
+                .load::<(ProductCost, Cost, Supplier)>(&connection)?;
+
+            let vec_product_prices = product_prices::dsl::product_prices
+                .filter(product_prices::dsl::product_id.eq(db_product.id))
+                .inner_join(prices)
+                .load::<(ProductPrice, Price)>(&connection)?;
+
+            full_product.product = db_product;
+
+            for (product_price, price) in vec_product_prices {
+                full_product.prices.push((product_price, price));
             }
-            if let Some(_prices) = db_full_product.1 {
-                full_product.prices.insert(_prices.1.unwrap().name, _prices.0.price);
-            }
-            if let Some(_costs) = db_full_product.2 {
-                full_product.costs.push(_costs.0.mapped_to_editable_suppler_product_cost());
+
+            for (product_cost, cost, supplier) in vec_product_costs {
+                full_product.costs.push((product_cost, cost, supplier));
             }
         }
         Ok(full_product)
@@ -100,7 +112,7 @@ impl Product {
         product
     }
 
-    pub fn update(param_id: i32, full_product: FullProduct) -> Result<Product, diesel::result::Error> {
+    pub fn update(param_id: i32, full_product: FullNewProduct) -> Result<Product, diesel::result::Error> {
         use schema::products::dsl::name;
         let connection = establish_connection();
 

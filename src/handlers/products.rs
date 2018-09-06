@@ -31,7 +31,7 @@ pub fn create(product: FullNewProduct) -> Result<Json<Product>, status::Custom<S
 }
 
 #[put("/products/<id>", format="application/json", data="<product>")]
-pub fn update(id: i32, product: FullProduct) -> Result<Json<Product>, status::Custom<String>> {
+pub fn update(id: i32, product: FullNewProduct) -> Result<Json<Product>, status::Custom<String>> {
     match Product::update(id, product) {
         Ok(product) => Ok(Json(product)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))

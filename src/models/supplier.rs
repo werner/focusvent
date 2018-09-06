@@ -7,7 +7,7 @@ use schema::suppliers;
 use schema::suppliers::dsl::*;
 use models::db_connection;
 
-#[derive(Serialize, Deserialize, Clone, Queryable)]
+#[derive(Serialize, Deserialize, Clone, Queryable, Debug)]
 pub struct Supplier {
     pub id: i32,
     pub first_name: Option<String>,
@@ -17,7 +17,7 @@ pub struct Supplier {
     pub phone: Option<String>
 }
 
-#[derive(Serialize, Deserialize, Insertable)]
+#[derive(Serialize, Deserialize, Insertable, Debug)]
 #[table_name="suppliers"]
 pub struct NewSupplier {
     pub first_name: Option<String>,

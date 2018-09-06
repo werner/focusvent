@@ -11,6 +11,7 @@ use rocket::http::Status;
 use rocket::local::Client;
 
 use focusvent::models::product::Product;
+use focusvent::models::product::FullProduct;
 use focusvent::models::cost::Cost;
 use focusvent::models::supplier::Supplier;
 use focusvent::schema::products::dsl::*;
@@ -120,7 +121,7 @@ pub fn update(client: &Client) {
         .dispatch();
     assert_eq!(response.status(), Status::Ok);
     let mut response = client.get(format!("/products/{}", product.id)).dispatch();
-    assert_eq!(Some(format!(r#"{{"product":{{"id":{},"name":"Shoes","description":"for the feet","stock":0.0}},"prices":{{}},"costs":{{}}}}"#, product.id)),
+    assert_eq!(Some(format!(r#"{{"product":{{"id":{},"name":"Shoes","description":"for the feet","stock":0.0}},"prices":[],"costs":[]}}"#, product.id)),
                response.body_string());
 }
 
@@ -156,6 +157,10 @@ pub fn show(client: &Client, connection: &PgConnection) {
     let product = create_product_with_price(client);
     let mut response = client.get(format!("/products/{}", product.id)).dispatch();
     assert_eq!(response.status(), Status::Ok);
-    assert_eq!(Some(format!(r#"{{"product":{{"id":{},"name":"Hat","description":"for the head","stock":0.0}},"prices":{{"default":1234,"max":5093}},"costs":{{"better":1234,"not sure":5678}}}}"#, product.id)),
-               response.body_string());
+
+    let full_product: FullProduct = serde_json::from_str(&response.body_string().unwrap()).unwrap();
+    assert_eq!("Hat", full_product.product.name);
+    assert_eq!(Some("for the head".to_string()), full_product.product.description);
+    assert_eq!(2, full_product.prices.len());
+    assert_eq!(2, full_product.costs.len());
 }

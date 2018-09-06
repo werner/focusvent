@@ -5,13 +5,13 @@ use schema::costs;
 use schema::costs::dsl::*;
 use taxonomy;
 
-#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash)]
+#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug)]
 pub struct Cost {
     pub id: i32,
     pub name: String
 }
 
-#[derive(Serialize, Deserialize, Insertable, Eq, PartialEq, Hash)]
+#[derive(Serialize, Deserialize, Insertable, Eq, PartialEq, Hash, Debug)]
 #[table_name="costs"]
 pub struct NewCost {
     pub name: String
