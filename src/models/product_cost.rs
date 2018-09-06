@@ -1,5 +1,4 @@
 use std::io::Read;
-use std::collections::BTreeMap;
 use diesel;
 use diesel::RunQueryDsl;
 use diesel::QueryDsl;
@@ -8,8 +7,6 @@ use diesel::BoolExpressionMethods;
 use diesel::pg::PgConnection;
 use schema::product_costs;
 use schema::costs::dsl::*;
-use models::cost::Taxonomy;
-use models::cost::NewCost;
 use models::cost::Cost;
 use models::db_connection::*;
 

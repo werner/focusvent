@@ -8,7 +8,6 @@ use models::price::Price;
 use schema::product_prices::dsl::*;
 use schema::prices::dsl::*;
 use models::product_cost::ProductCost;
-use models::product_cost::EditableProductCost;
 use models::product_cost::EditableProductSupplierCost;
 use models::cost::Cost;
 use schema::product_costs::dsl::*;
