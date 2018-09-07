@@ -1,4 +1,15 @@
 table! {
+    clients (id) {
+        id -> Int4,
+        first_name -> Nullable<Varchar>,
+        last_name -> Nullable<Varchar>,
+        company_name -> Nullable<Varchar>,
+        email -> Nullable<Varchar>,
+        phone -> Nullable<Varchar>,
+    }
+}
+
+table! {
     costs (id) {
         id -> Int4,
         name -> Varchar,
@@ -46,7 +57,7 @@ table! {
         id -> Int4,
         first_name -> Nullable<Varchar>,
         last_name -> Nullable<Varchar>,
-        company_name -> Nullable<Varchar>,
+        company_name -> Varchar,
         email -> Nullable<Varchar>,
         phone -> Nullable<Varchar>,
     }
@@ -59,6 +70,7 @@ joinable!(product_prices -> prices (price_id));
 joinable!(product_prices -> products (product_id));
 
 allow_tables_to_appear_in_same_query!(
+    clients,
     costs,
     prices,
     product_costs,

@@ -4,7 +4,7 @@ CREATE TABLE suppliers (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR NULL,
     last_name VARCHAR NULL,
-    company_name VARCHAR NULL,
+    company_name VARCHAR NOT NULL,
     email VARCHAR NULL,
     phone VARCHAR NULL
 );

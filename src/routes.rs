@@ -2,6 +2,7 @@ use handlers::products;
 use handlers::prices;
 use handlers::costs;
 use handlers::suppliers;
+use handlers::clients;
 use rocket;
 
 pub fn routes() -> Vec<rocket::Route> {
@@ -20,6 +21,11 @@ pub fn routes() -> Vec<rocket::Route> {
             suppliers::create,
             suppliers::update,
             suppliers::delete,
+            clients::index,
+            clients::show,
+            clients::create,
+            clients::update,
+            clients::delete,
             costs::index,
             costs::show,
             costs::create,

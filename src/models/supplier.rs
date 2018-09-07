@@ -12,7 +12,7 @@ pub struct Supplier {
     pub id: i32,
     pub first_name: Option<String>,
     pub last_name: Option<String>,
-    pub company_name: Option<String>,
+    pub company_name: String,
     pub email: Option<String>,
     pub phone: Option<String>
 }
@@ -22,7 +22,7 @@ pub struct Supplier {
 pub struct NewSupplier {
     pub first_name: Option<String>,
     pub last_name: Option<String>,
-    pub company_name: Option<String>,
+    pub company_name: String,
     pub email: Option<String>,
     pub phone: Option<String>
 }
