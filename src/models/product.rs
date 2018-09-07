@@ -19,7 +19,8 @@ pub struct Product {
     pub id: i32,
     pub name: String,
     pub description: Option<String>,
-    pub stock: Option<f64>
+    pub stock: Option<f64>,
+    pub code: Option<String>
 }
 
 #[derive(Serialize, Deserialize, Insertable, Debug, Clone)]
@@ -27,6 +28,7 @@ pub struct Product {
 pub struct NewProduct {
     pub name: String,
     pub description: Option<String>,
+    pub code: Option<String>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -118,6 +120,7 @@ impl Product {
 
         let product = diesel::update(products.find(param_id))
             .set((name.eq(full_product.product.name),
+                  code.eq(full_product.product.code),
                   description.eq(full_product.product.description)))
             .get_result::<Product>(&connection);
 
@@ -139,6 +142,7 @@ impl Product {
     fn blank_product() -> Product {
         Product {
             id: 0,
+            code: None,
             name: "".to_string(),
             description: None,
             stock: None

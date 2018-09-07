@@ -37,6 +37,7 @@ table! {
         name -> Varchar,
         description -> Nullable<Text>,
         stock -> Nullable<Float8>,
+        code -> Nullable<Varchar>,
     }
 }
 

@@ -153,7 +153,7 @@ pub fn update(client: &Client, connection: &PgConnection) {
         .dispatch();
     assert_eq!(response.status(), Status::Ok);
     let mut response = client.get(format!("/products/{}", product.id)).dispatch();
-    assert_eq!(Some(format!(r#"{{"product":{{"id":{},"name":"Shoes","description":"for the feet","stock":0.0}},"prices":[],"costs":[]}}"#, product.id)),
+    assert_eq!(Some(format!(r#"{{"product":{{"id":{},"name":"Shoes","description":"for the feet","stock":0.0,"code":null}},"prices":[],"costs":[]}}"#, product.id)),
                response.body_string());
 }
 
@@ -164,7 +164,7 @@ pub fn index(client: &Client, connection: &PgConnection) {
     let product2 = create_product_with_price(client);
     let mut response = client.get("/products?offset=0&limit=10").dispatch();
     assert_eq!(response.status(), Status::Ok);
-    let string = format!(r#"[{{"id":{},"name":"Shoe","description":"for the feet","stock":0.0}},{{"id":{},"name":"Hat","description":"for the head","stock":0.0}}]"#,
+    let string = format!(r#"[{{"id":{},"name":"Shoe","description":"for the feet","stock":0.0,"code":null}},{{"id":{},"name":"Hat","description":"for the head","stock":0.0,"code":null}}]"#,
                         product.id, product2.id);
     assert_eq!(Some(string), response.body_string());
 }
