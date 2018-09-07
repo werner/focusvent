@@ -134,7 +134,9 @@ fn create_product_with_price(client: &Client) -> Product {
     serde_json::from_str(&response.body_string().unwrap()).unwrap()
 }
 
-pub fn update(client: &Client) {
+pub fn update(client: &Client, connection: &PgConnection) {
+    clear(connection);
+
     let product = create_product(client);
     let response = client
         .put(format!("/products/{}", product.id))
@@ -156,6 +158,32 @@ pub fn update(client: &Client) {
 }
 
 pub fn index(client: &Client, connection: &PgConnection) {
+    clear(connection);
+
+    let product = create_product(client);
+    let product2 = create_product_with_price(client);
+    let mut response = client.get("/products?offset=0&limit=10").dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    let string = format!(r#"[{{"id":{},"name":"Shoe","description":"for the feet","stock":0.0}},{{"id":{},"name":"Hat","description":"for the head","stock":0.0}}]"#,
+                        product.id, product2.id);
+    assert_eq!(Some(string), response.body_string());
+}
+
+pub fn show(client: &Client, connection: &PgConnection) {
+    clear(connection);
+
+    let product = create_product_with_price(client);
+    let mut response = client.get(format!("/products/{}", product.id)).dispatch();
+    assert_eq!(response.status(), Status::Ok);
+
+    let full_product: FullProduct = serde_json::from_str(&response.body_string().unwrap()).unwrap();
+    assert_eq!("Hat", full_product.product.name);
+    assert_eq!(Some("for the head".to_string()), full_product.product.description);
+    assert_eq!(2, full_product.prices.len());
+    assert_eq!(2, full_product.costs.len());
+}
+
+fn clear(connection: &PgConnection) {
     use focusvent::schema::prices::dsl::*;
     use focusvent::schema::product_prices::dsl::*;
 
@@ -169,33 +197,4 @@ pub fn index(client: &Client, connection: &PgConnection) {
     diesel::delete(product_prices).execute(connection).unwrap();
     diesel::delete(products).execute(connection).unwrap();
     diesel::delete(prices).execute(connection).unwrap();
-
-    let product = create_product(client);
-    let product2 = create_product_with_price(client);
-    let mut response = client.get("/products?offset=0&limit=10").dispatch();
-    assert_eq!(response.status(), Status::Ok);
-    let string = format!(r#"[{{"id":{},"name":"Shoe","description":"for the feet","stock":0.0}},{{"id":{},"name":"Hat","description":"for the head","stock":0.0}}]"#,
-                        product.id, product2.id);
-    assert_eq!(Some(string), response.body_string());
-}
-
-pub fn show(client: &Client, connection: &PgConnection) {
-    use focusvent::schema::product_costs::dsl::*;
-    use focusvent::schema::prices::dsl::*;
-    use focusvent::schema::product_prices::dsl::*;
-
-    diesel::delete(product_costs).execute(connection).unwrap();
-    diesel::delete(product_prices).execute(connection).unwrap();
-    diesel::delete(products).execute(connection).unwrap();
-    diesel::delete(prices).execute(connection).unwrap();
-
-    let product = create_product_with_price(client);
-    let mut response = client.get(format!("/products/{}", product.id)).dispatch();
-    assert_eq!(response.status(), Status::Ok);
-
-    let full_product: FullProduct = serde_json::from_str(&response.body_string().unwrap()).unwrap();
-    assert_eq!("Hat", full_product.product.name);
-    assert_eq!(Some("for the head".to_string()), full_product.product.description);
-    assert_eq!(2, full_product.prices.len());
-    assert_eq!(2, full_product.costs.len());
 }

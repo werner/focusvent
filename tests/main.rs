@@ -23,10 +23,10 @@ mod test {
         let client = Client::new(rocket()).expect("valid rocket instance");
 
         let connection = establish_connection();
-        product_tests::index(&client, &connection);
-        product_tests::show(&client, &connection);
-        product_tests::update(&client);
         price_tests::index(&client, &connection);
         price_tests::update(&client);
+        product_tests::index(&client, &connection);
+        product_tests::update(&client, &connection);
+        product_tests::show(&client, &connection);
     }
 }
