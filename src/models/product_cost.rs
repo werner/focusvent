@@ -6,8 +6,6 @@ use diesel::ExpressionMethods;
 use diesel::BoolExpressionMethods;
 use diesel::pg::PgConnection;
 use schema::product_costs;
-use schema::costs::dsl::*;
-use models::cost::Cost;
 use models::db_connection::*;
 
 #[derive(Identifiable, Associations, Serialize, Deserialize, Queryable, Debug)]
@@ -19,45 +17,26 @@ pub struct ProductCost {
     pub cost: i32
 }
 
-#[derive(Serialize, Deserialize, Insertable, Debug)]
+#[derive(Serialize, Deserialize, Insertable, Clone, Debug)]
 #[table_name="product_costs"]
 pub struct EditableProductCost {
-    pub product_id: i32,
+    pub product_id: Option<i32>,
     pub cost_id: i32,
     pub supplier_id: i32,
     pub cost: i32
-}
-
-#[derive(Serialize, Deserialize, Debug, Clone)]
-pub struct EditableProductSupplierCost {
-    pub cost_id: i32,
-    pub supplier_id: i32,
-    pub cost: i32
-}
-
-impl EditableProductSupplierCost {
-    pub fn mapped_to_editable_product_cost(&self, cost_id: i32, product_id: i32) -> EditableProductCost {
-        EditableProductCost {
-            product_id: product_id,
-            cost_id: cost_id,
-            supplier_id: self.supplier_id,
-            cost: self.cost
-        }
-    }
 }
 
 impl ProductCost {
-    pub fn batch_action(vec_costs: Vec<EditableProductSupplierCost>, product_id: i32) -> Result<bool, diesel::result::Error> {
+    pub fn batch_action(vec_costs: Vec<EditableProductCost>, product_id: i32) -> Result<bool, diesel::result::Error> {
         use schema::product_costs::dsl;
         let connection = establish_connection();
 
         for mut product_cost in vec_costs {
-            let db_cost: Cost = costs.find(&product_cost.cost_id).get_result(&connection)?;
-            let editable_product_cost: EditableProductCost = product_cost.mapped_to_editable_product_cost(db_cost.id, product_id);
+            product_cost.product_id = Some(product_id);
 
             let result_edit_cost = 
                 dsl::product_costs
-                    .filter(dsl::cost_id.eq(db_cost.id).and(dsl::product_id.eq(product_id)))
+                    .filter(dsl::cost_id.eq(product_cost.cost_id).and(dsl::product_id.eq(product_id)))
                     .first::<ProductCost>(&connection);
 
             if let Ok(edit_cost) = result_edit_cost {
@@ -66,19 +45,11 @@ impl ProductCost {
                           dsl::supplier_id.eq(product_cost.supplier_id)))
                     .get_result::<ProductCost>(&connection)?;
             } else {
-                ProductCost::create_product_cost(&connection, &editable_product_cost)?;
+                ProductCost::create_product_cost(&connection, &product_cost)?;
             }
         }
 
         Ok(true)
-    }
-
-    pub fn mapped_to_editable_suppler_product_cost(&self) -> EditableProductSupplierCost {
-        EditableProductSupplierCost {
-            cost_id: self.cost_id,
-            supplier_id: self.supplier_id,
-            cost: self.cost
-        }
     }
 
     fn create_product_cost(connection: &PgConnection, product_cost: &EditableProductCost) -> Result<ProductCost, diesel::result::Error> {

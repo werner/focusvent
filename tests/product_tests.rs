@@ -15,8 +15,30 @@ use focusvent::models::product::FullProduct;
 use focusvent::models::cost::Cost;
 use focusvent::models::supplier::Supplier;
 use focusvent::schema::products::dsl::*;
-use focusvent::schema::prices::dsl::*;
-use focusvent::schema::product_prices::dsl::*;
+
+fn create_price(client: &Client) -> Cost {
+    let mut response = client
+        .post("/prices")
+        .header(ContentType::JSON)
+        .body(r#"{
+            "name": "Default"
+        }"#)
+        .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    serde_json::from_str(&response.body_string().unwrap()).unwrap()
+}
+
+fn create_price_2(client: &Client) -> Cost {
+    let mut response = client
+        .post("/prices")
+        .header(ContentType::JSON)
+        .body(r#"{
+            "name": "Good"
+        }"#)
+        .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    serde_json::from_str(&response.body_string().unwrap()).unwrap()
+}
 
 fn create_cost(client: &Client) -> Cost {
     let mut response = client
@@ -63,7 +85,7 @@ fn create_product(client: &Client) -> Product {
                 "name": "Shoe",
                 "description": "for the feet"
             },
-            "prices": {},
+            "prices": [],
             "costs": []
         }"#)
         .dispatch();
@@ -74,6 +96,8 @@ fn create_product(client: &Client) -> Product {
 fn create_product_with_price(client: &Client) -> Product {
     let cost = create_cost(client);
     let cost2 = create_cost_2(client);
+    let price = create_price(client);
+    let price2 = create_price_2(client);
     let supplier = create_supplier(client);
     let mut response = client
         .post("/products")
@@ -83,10 +107,16 @@ fn create_product_with_price(client: &Client) -> Product {
                 "name": "Hat",
                 "description": "for the head"
             }},
-            "prices": {{
-                "default": 1234,
-                "max": 5093
-            }},
+            "prices": [
+                {{
+                    "price_id": {},
+                    "price": 2000
+                }},
+                {{
+                    "price_id": {},
+                    "price": 1000
+                }}
+            ],
             "costs": [
                 {{
                     "cost_id": {},
@@ -99,7 +129,7 @@ fn create_product_with_price(client: &Client) -> Product {
                     "cost": 5678
                 }}
             ]
-        }}"#, cost.id, supplier.id, cost2.id, supplier.id))
+        }}"#, price.id, price2.id, cost.id, supplier.id, cost2.id, supplier.id))
         .dispatch();
     serde_json::from_str(&response.body_string().unwrap()).unwrap()
 }
@@ -115,7 +145,7 @@ pub fn update(client: &Client) {
                 "name": "Shoes",
                 "description": "for the feet"
             }},
-            "prices": {{}},
+            "prices": [],
             "costs": []
         }}"#, product.id))
         .dispatch();
@@ -126,6 +156,9 @@ pub fn update(client: &Client) {
 }
 
 pub fn index(client: &Client, connection: &PgConnection) {
+    use focusvent::schema::prices::dsl::*;
+    use focusvent::schema::product_prices::dsl::*;
+
     use focusvent::schema::product_costs::dsl::*;
     use focusvent::schema::costs::dsl::*;
     use focusvent::schema::suppliers::dsl::*;
@@ -148,6 +181,8 @@ pub fn index(client: &Client, connection: &PgConnection) {
 
 pub fn show(client: &Client, connection: &PgConnection) {
     use focusvent::schema::product_costs::dsl::*;
+    use focusvent::schema::prices::dsl::*;
+    use focusvent::schema::product_prices::dsl::*;
 
     diesel::delete(product_costs).execute(connection).unwrap();
     diesel::delete(product_prices).execute(connection).unwrap();

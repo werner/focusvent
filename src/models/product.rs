@@ -1,13 +1,13 @@
 use std::io::Read;
-use std::collections::BTreeMap;
 use diesel;
 use diesel::prelude::*;
 use models::db_connection::*;
 use models::product_price::ProductPrice;
+use models::product_price::EditableProductPrice;
 use models::price::Price;
 use schema::prices::dsl::*;
 use models::product_cost::ProductCost;
-use models::product_cost::EditableProductSupplierCost;
+use models::product_cost::EditableProductCost;
 use models::cost::Cost;
 use models::supplier::Supplier;
 use schema::costs::dsl::*;
@@ -32,8 +32,8 @@ pub struct NewProduct {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct FullNewProduct {
     product: NewProduct,
-    prices: BTreeMap<String, i32>,
-    costs: Vec<EditableProductSupplierCost>
+    prices: Vec<EditableProductPrice>,
+    costs: Vec<EditableProductCost>
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -105,7 +105,7 @@ impl Product {
             .get_result(&connection);
 
         if let Ok(db_product) = &product {
-            ProductPrice::batch_create(full_new_product.prices, db_product.id)?;
+            ProductPrice::batch_action(full_new_product.prices, db_product.id)?;
             ProductCost::batch_action(full_new_product.costs, db_product.id)?;
         }
 
@@ -122,7 +122,7 @@ impl Product {
             .get_result::<Product>(&connection);
 
         if let Ok(db_product) = &product {
-            ProductPrice::batch_update(full_product.prices, db_product.id)?;
+            ProductPrice::batch_action(full_product.prices, db_product.id)?;
             ProductCost::batch_action(full_product.costs, db_product.id)?;
         }
 
