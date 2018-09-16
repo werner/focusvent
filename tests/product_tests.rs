@@ -3,9 +3,7 @@ extern crate diesel;
 extern crate rocket;
 extern crate serde;
 extern crate serde_json;
-extern crate regex;
 
-use regex::Regex;
 use diesel::RunQueryDsl;
 use diesel::pg::PgConnection;
 use rocket::http::ContentType;
@@ -159,7 +157,7 @@ pub fn update(client: &Client, connection: &PgConnection) {
                response.body_string());
 }
 
-pub fn update_price(client: &Client, connection: &PgConnection) {
+pub fn update_price_and_cost(client: &Client, connection: &PgConnection) {
     clear(connection);
 
     let product = create_product_with_price(client);
@@ -194,17 +192,37 @@ pub fn update_price(client: &Client, connection: &PgConnection) {
                     "price": 1234
                 }}
             ],
-            "costs": []
-        }}"#, product.id, full_product.prices[0].price_id, full_product.prices[1].price_id))
+            "costs": [
+                {{
+                    "cost_id": {},
+                    "cost": 9999,
+                    "supplier_id": {}
+                }},
+                {{
+                    "cost_id": {},
+                    "cost": 9384,
+                    "supplier_id": {}
+                }}
+            ]
+        }}"#, product.id,
+              full_product.prices[0].price_id,
+              full_product.prices[1].price_id,
+              full_product.costs[0].cost_id,
+              full_product.costs[0].supplier_id,
+              full_product.costs[1].cost_id,
+              full_product.costs[1].supplier_id))
         .dispatch();
     assert_eq!(response.status(), Status::Ok);
     let mut response = client.get(format!("/products/{}", product.id)).dispatch();
-    let re = Regex::new(r#"(\{"product".*),"costs".*"#).unwrap();
-    let string_response = response.body_string().unwrap();
-    let captures = re.captures(&string_response).unwrap();
-    println!("{:#?}", &captures[1]);
-    assert_eq!(format!(r#"{{"product":{{"id":{},"name":"Shoes","description":"for the feet","stock":0.0,"code":null}},"prices":[{{"price_id":{},"price":9876,"name":"Default"}},{{"price_id":{},"price":1234,"name":"Good"}}]"#, product.id, full_product.prices[0].price_id, full_product.prices[1].price_id),
-               &captures[1]);
+    assert_eq!(format!(r#"{{"product":{{"id":{},"name":"Shoes","description":"for the feet","stock":0.0,"code":null}},"prices":[{{"price_id":{},"price":9876,"name":"Default"}},{{"price_id":{},"price":1234,"name":"Good"}}],"costs":[{{"cost_id":{},"supplier_id":{},"cost":9999,"name":"Cheap"}},{{"cost_id":{},"supplier_id":{},"cost":9384,"name":"Expensive"}}]}}"#,
+                       product.id,
+                       full_product.prices[0].price_id, 
+                       full_product.prices[1].price_id,
+                       full_product.costs[0].cost_id, 
+                       full_product.costs[0].supplier_id, 
+                       full_product.costs[1].cost_id,
+                       full_product.costs[1].supplier_id),
+               response.body_string().unwrap());
 }
 
 pub fn index(client: &Client, connection: &PgConnection) {

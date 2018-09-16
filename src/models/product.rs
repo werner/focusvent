@@ -9,6 +9,7 @@ use models::price::Price;
 use schema::prices::dsl::*;
 use models::product_cost::ProductCost;
 use models::product_cost::EditableProductCost;
+use models::product_cost::FullProductCost;
 use models::cost::Cost;
 use models::supplier::Supplier;
 use schema::costs::dsl::*;
@@ -43,7 +44,7 @@ pub struct FullNewProduct {
 pub struct FullProduct {
     pub product: Product,
     pub prices: Vec<FullProductPrice>,
-    pub costs: Vec<(ProductCost, Cost, Supplier)>
+    pub costs: Vec<FullProductCost>
 }
 
 impl Product {
@@ -100,7 +101,14 @@ impl Product {
             }
 
             for (product_cost, cost, supplier) in vec_product_costs {
-                full_product.costs.push((product_cost, cost, supplier));
+                full_product.costs.push(
+                    FullProductCost {
+                        cost_id: cost.id,
+                        supplier_id: supplier.id,
+                        cost: product_cost.cost,
+                        name: cost.name
+                    }
+                );
             }
         }
         Ok(full_product)

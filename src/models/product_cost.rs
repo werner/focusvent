@@ -26,6 +26,14 @@ pub struct EditableProductCost {
     pub cost: i32
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct FullProductCost {
+    pub cost_id: i32,
+    pub supplier_id: i32,
+    pub cost: i32,
+    pub name: String
+}
+
 impl ProductCost {
     pub fn batch_action(vec_costs: Vec<EditableProductCost>, product_id: i32) -> Result<bool, diesel::result::Error> {
         use schema::product_costs::dsl;
