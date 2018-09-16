@@ -6,13 +6,11 @@ use models::product_price::ProductPrice;
 use models::product_price::EditableProductPrice;
 use models::product_price::FullProductPrice;
 use models::price::Price;
-use schema::prices::dsl::*;
 use models::product_cost::ProductCost;
 use models::product_cost::EditableProductCost;
 use models::product_cost::FullProductCost;
 use models::cost::Cost;
 use models::supplier::Supplier;
-use schema::costs::dsl::*;
 use schema::products;
 use schema::products::dsl::*;
 
@@ -63,6 +61,8 @@ impl Product {
         use schema::product_prices;
         use schema::product_costs;
         use schema::suppliers;
+        use schema::costs;
+        use schema::prices;
 
         let connection = establish_connection();
         let mut full_product: FullProduct =
@@ -79,13 +79,15 @@ impl Product {
 
             let vec_product_costs = product_costs::dsl::product_costs
                 .filter(product_costs::dsl::product_id.eq(db_product.id))
-                .inner_join(costs)
+                .inner_join(costs::dsl::costs)
                 .inner_join(suppliers::dsl::suppliers)
+                .order(costs::name)
                 .load::<(ProductCost, Cost, Supplier)>(&connection)?;
 
             let vec_product_prices = product_prices::dsl::product_prices
                 .filter(product_prices::dsl::product_id.eq(db_product.id))
-                .inner_join(prices)
+                .inner_join(prices::dsl::prices)
+                .order(prices::name)
                 .load::<(ProductPrice, Price)>(&connection)?;
 
             full_product.product = db_product;
