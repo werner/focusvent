@@ -4,6 +4,7 @@ use rocket::http::Status;
 use rocket_contrib::Json;
 use models::supplier::Supplier;
 use models::supplier::NewSupplier;
+use models::supplier::Taxonomy;
 
 #[get("/suppliers?<params>")]
 pub fn index(params: GetTransactionParams) -> Result<Json<Vec<Supplier>>, status::Custom<String>> {

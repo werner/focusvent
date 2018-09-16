@@ -5,7 +5,7 @@ use schema::costs;
 use schema::costs::dsl::*;
 use taxonomy;
 
-#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug)]
+#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug, AsChangeset)]
 pub struct Cost {
     pub id: i32,
     pub name: String

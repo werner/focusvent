@@ -32,7 +32,7 @@ macro_rules! taxonomy {
                 let connection = ::models::db_connection::establish_connection();
 
                 diesel::update($table_model.find(param_id))
-                    .set(name.eq(type_model.name))
+                    .set(&type_model)
                     .get_result::<$type_model>(&connection)
             }
 

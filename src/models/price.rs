@@ -3,10 +3,9 @@ use diesel;
 use diesel::prelude::*;
 use schema::prices;
 use schema::prices::dsl::*;
-use models::product_price::ProductPrice;
 use taxonomy;
 
-#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug, Clone)]
+#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug, Clone, AsChangeset)]
 pub struct Price {
     pub id: i32,
     pub name: String

@@ -63,6 +63,14 @@ table! {
     }
 }
 
+table! {
+    taxes (id) {
+        id -> Int4,
+        name -> Varchar,
+        percentage -> Int4,
+    }
+}
+
 joinable!(product_costs -> costs (cost_id));
 joinable!(product_costs -> products (product_id));
 joinable!(product_costs -> suppliers (supplier_id));
@@ -77,4 +85,5 @@ allow_tables_to_appear_in_same_query!(
     product_prices,
     products,
     suppliers,
+    taxes,
 );
