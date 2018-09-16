@@ -4,6 +4,7 @@ use diesel::prelude::*;
 use models::db_connection::*;
 use models::product_price::ProductPrice;
 use models::product_price::EditableProductPrice;
+use models::product_price::FullProductPrice;
 use models::price::Price;
 use schema::prices::dsl::*;
 use models::product_cost::ProductCost;
@@ -41,7 +42,7 @@ pub struct FullNewProduct {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FullProduct {
     pub product: Product,
-    pub prices: Vec<(ProductPrice, Price)>,
+    pub prices: Vec<FullProductPrice>,
     pub costs: Vec<(ProductCost, Cost, Supplier)>
 }
 
@@ -89,7 +90,13 @@ impl Product {
             full_product.product = db_product;
 
             for (product_price, price) in vec_product_prices {
-                full_product.prices.push((product_price, price));
+                full_product.prices.push(
+                    FullProductPrice {
+                        price_id: price.id,
+                        price: product_price.price,
+                        name: price.name
+                    }
+                );
             }
 
             for (product_cost, cost, supplier) in vec_product_costs {

@@ -27,6 +27,7 @@ mod test {
         price_tests::update(&client);
         product_tests::index(&client, &connection);
         product_tests::update(&client, &connection);
+        product_tests::update_price(&client, &connection);
         product_tests::show(&client, &connection);
     }
 }

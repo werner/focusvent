@@ -8,7 +8,7 @@ use diesel::pg::PgConnection;
 use schema::product_prices;
 use models::db_connection::*;
 
-#[derive(Identifiable, Associations, Serialize, Deserialize, Queryable, Debug)]
+#[derive(Identifiable, Associations, Serialize, Deserialize, Queryable, Debug, Clone)]
 pub struct ProductPrice {
     pub id: i32,
     pub product_id: i32,
@@ -22,6 +22,13 @@ pub struct EditableProductPrice {
     pub product_id: Option<i32>,
     pub price_id: i32,
     pub price: i32
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct FullProductPrice {
+    pub price_id: i32,
+    pub price: i32,
+    pub name: String
 }
 
 impl ProductPrice {

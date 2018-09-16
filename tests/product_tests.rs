@@ -3,7 +3,9 @@ extern crate diesel;
 extern crate rocket;
 extern crate serde;
 extern crate serde_json;
+extern crate regex;
 
+use regex::Regex;
 use diesel::RunQueryDsl;
 use diesel::pg::PgConnection;
 use rocket::http::ContentType;
@@ -155,6 +157,54 @@ pub fn update(client: &Client, connection: &PgConnection) {
     let mut response = client.get(format!("/products/{}", product.id)).dispatch();
     assert_eq!(Some(format!(r#"{{"product":{{"id":{},"name":"Shoes","description":"for the feet","stock":0.0,"code":null}},"prices":[],"costs":[]}}"#, product.id)),
                response.body_string());
+}
+
+pub fn update_price(client: &Client, connection: &PgConnection) {
+    clear(connection);
+
+    let product = create_product_with_price(client);
+    let mut response = client.get(format!("/products/{}", product.id)).dispatch();
+    let full_product: FullProduct =
+        serde_json::from_str(&response.body_string().unwrap()).unwrap();
+
+    let prices =
+        full_product
+        .prices
+        .clone()
+        .into_iter()
+        .map(|record| record.price ).collect::<Vec<i32>>();
+
+    assert_eq!(vec![2000, 1000], prices);
+    let response = client
+        .put(format!("/products/{}", product.id))
+        .header(ContentType::JSON)
+        .body(format!(r#"{{
+            "product": {{
+                "id": {},
+                "name": "Shoes",
+                "description": "for the feet"
+            }},
+            "prices": [
+                {{
+                    "price_id": {},
+                    "price": 9876
+                }},
+                {{
+                    "price_id": {},
+                    "price": 1234
+                }}
+            ],
+            "costs": []
+        }}"#, product.id, full_product.prices[0].price_id, full_product.prices[1].price_id))
+        .dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    let mut response = client.get(format!("/products/{}", product.id)).dispatch();
+    let re = Regex::new(r#"(\{"product".*),"costs".*"#).unwrap();
+    let string_response = response.body_string().unwrap();
+    let captures = re.captures(&string_response).unwrap();
+    println!("{:#?}", &captures[1]);
+    assert_eq!(format!(r#"{{"product":{{"id":{},"name":"Shoes","description":"for the feet","stock":0.0,"code":null}},"prices":[{{"price_id":{},"price":9876,"name":"Default"}},{{"price_id":{},"price":1234,"name":"Good"}}]"#, product.id, full_product.prices[0].price_id, full_product.prices[1].price_id),
+               &captures[1]);
 }
 
 pub fn index(client: &Client, connection: &PgConnection) {
