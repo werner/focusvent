@@ -9,4 +9,4 @@ pub mod product_cost;
 pub mod db_connection;
 
 #[macro_use]
-pub mod taxonomy;
+pub mod basic_model_actions;

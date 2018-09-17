@@ -4,7 +4,7 @@ use rocket::http::Status;
 use rocket_contrib::Json;
 use models::client::Client;
 use models::client::NewClient;
-use models::client::Taxonomy;
+use models::client::BasicModelActions;
 
 #[get("/clients?<params>")]
 pub fn index(params: GetTransactionParams) -> Result<Json<Vec<Client>>, status::Custom<String>> {

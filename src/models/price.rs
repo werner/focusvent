@@ -3,7 +3,7 @@ use diesel;
 use diesel::prelude::*;
 use schema::prices;
 use schema::prices::dsl::*;
-use taxonomy;
+use basic_model_actions;
 
 #[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug, Clone, AsChangeset)]
 pub struct Price {
@@ -17,6 +17,6 @@ pub struct NewPrice {
     pub name: String
 }
  
-taxonomy!(prices, Price, NewPrice);
+basic_model_actions!(prices, Price, NewPrice);
 from_data!(Price);
 from_data!(NewPrice);

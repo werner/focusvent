@@ -1,8 +1,8 @@
 #[macro_export]
-macro_rules! taxonomy {
+macro_rules! basic_model_actions {
     ($table_model:ident, $type_model:ty, $new_type_model:ty) => {
 
-        pub trait Taxonomy {
+        pub trait BasicModelActions {
             fn list(limit: i64, offset: i64) -> Result<Vec<$type_model>, diesel::result::Error> {
                 let connection = ::models::db_connection::establish_connection();
 
@@ -44,6 +44,6 @@ macro_rules! taxonomy {
             }
         }
 
-        impl Taxonomy for $type_model{ }
+        impl BasicModelActions for $type_model{ }
     };
 }

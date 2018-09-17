@@ -4,7 +4,7 @@ use diesel::QueryDsl;
 use diesel::RunQueryDsl;
 use schema::clients;
 use schema::clients::dsl::*;
-use taxonomy;
+use basic_model_actions;
 
 #[derive(Serialize, Deserialize, Clone, Queryable, Debug, AsChangeset)]
 pub struct Client {
@@ -26,6 +26,6 @@ pub struct NewClient {
     pub phone: Option<String>
 }
 
-taxonomy!(clients, Client, NewClient);
+basic_model_actions!(clients, Client, NewClient);
 from_data!(Client);
 from_data!(NewClient);

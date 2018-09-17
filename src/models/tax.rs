@@ -3,7 +3,7 @@ use diesel;
 use diesel::prelude::*;
 use schema::taxes;
 use schema::taxes::dsl::*;
-use taxonomy;
+use basic_model_actions;
 
 #[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug, Clone, AsChangeset)]
 #[table_name="taxes"]
@@ -20,6 +20,6 @@ pub struct NewTax {
     pub percentage: i32
 }
 
-taxonomy!(taxes, Tax, NewTax);
+basic_model_actions!(taxes, Tax, NewTax);
 from_data!(Tax);
 from_data!(NewTax);

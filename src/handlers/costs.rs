@@ -4,7 +4,7 @@ use rocket::http::Status;
 use rocket_contrib::Json;
 use models::cost::Cost;
 use models::cost::NewCost;
-use models::cost::Taxonomy;
+use models::cost::BasicModelActions;
 
 #[get("/costs?<params>")]
 pub fn index(params: GetTransactionParams) -> Result<Json<Vec<Cost>>, status::Custom<String>> {

@@ -4,7 +4,7 @@ use diesel::QueryDsl;
 use diesel::RunQueryDsl;
 use schema::suppliers;
 use schema::suppliers::dsl::*;
-use taxonomy;
+use basic_model_actions;
 
 #[derive(Serialize, Deserialize, Clone, Queryable, Debug, AsChangeset)]
 pub struct Supplier {
@@ -26,6 +26,6 @@ pub struct NewSupplier {
     pub phone: Option<String>
 }
 
-taxonomy!(suppliers, Supplier, NewSupplier);
+basic_model_actions!(suppliers, Supplier, NewSupplier);
 from_data!(Supplier);
 from_data!(NewSupplier);
