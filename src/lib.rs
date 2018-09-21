@@ -1,6 +1,9 @@
 #![feature(plugin)]
 #![plugin(rocket_codegen)]
 #![feature(custom_derive)]
+#![feature(custom_attribute)]
+#![feature(print_internals)]
+#![feature(fmt_internals)]
 
 extern crate rocket;
 extern crate rocket_contrib;
