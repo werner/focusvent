@@ -21,6 +21,7 @@ macro_rules! basic_model_actions {
             }
 
             fn show(request_id: i32) -> Result<$type_model, diesel::result::Error> {
+                use schema::$table_model::dsl::*;
                 let connection = ::models::db_connection::establish_connection();
 
                 $table_model
@@ -29,6 +30,7 @@ macro_rules! basic_model_actions {
             }
 
             fn update(param_id: i32, type_model: $type_model) -> Result<$type_model, diesel::result::Error> {
+                use schema::$table_model::dsl::*;
                 let connection = ::models::db_connection::establish_connection();
 
                 diesel::update($table_model.find(param_id))
@@ -37,6 +39,7 @@ macro_rules! basic_model_actions {
             }
 
             fn delete(param_id: i32) -> Result<usize, diesel::result::Error> {
+                use schema::$table_model::dsl::*;
                 let connection = ::models::db_connection::establish_connection();
 
                 diesel::delete($table_model.find(param_id))

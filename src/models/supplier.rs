@@ -6,7 +6,7 @@ use schema::suppliers;
 use schema::suppliers::dsl::*;
 use basic_model_actions;
 
-#[derive(Serialize, Deserialize, Clone, Queryable, Debug, AsChangeset)]
+#[derive(Serialize, Deserialize, Clone, Queryable, Debug, AsChangeset, FromForm)]
 pub struct Supplier {
     pub id: i32,
     pub first_name: Option<String>,

@@ -12,9 +12,8 @@ use models::product_cost::FullProductCost;
 use models::cost::Cost;
 use models::supplier::Supplier;
 use schema::products;
-use schema::products::dsl::*;
 
-#[derive(Serialize, Deserialize, Clone, Queryable, Debug)]
+#[derive(Serialize, Deserialize, Clone, Queryable, Debug, FromForm)]
 pub struct Product {
     pub id: i32,
     pub name: String,
@@ -133,6 +132,7 @@ impl Product {
 
     pub fn update(param_id: i32, full_product: FullNewProduct) -> Result<Product, diesel::result::Error> {
         use schema::products::dsl::name;
+        use schema::products::dsl::*;
         let connection = establish_connection();
 
         let product = diesel::update(products.find(param_id))
@@ -150,6 +150,7 @@ impl Product {
     }
 
     pub fn delete(param_id: i32) -> Result<usize, diesel::result::Error> {
+        use schema::products::dsl::*;
         let connection = establish_connection();
 
         diesel::delete(products.find(param_id))
@@ -171,3 +172,14 @@ from_data!(Product);
 from_data!(NewProduct);
 from_data!(FullNewProduct);
 from_data!(FullProduct);
+
+use std::str::FromStr;
+use serde_json;
+
+impl FromStr for Product {
+    type Err = serde_json::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        serde_json::from_str(s)
+    }
+}

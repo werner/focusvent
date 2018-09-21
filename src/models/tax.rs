@@ -2,10 +2,9 @@ use std::io::Read;
 use diesel;
 use diesel::prelude::*;
 use schema::taxes;
-use schema::taxes::dsl::*;
 use basic_model_actions;
 
-#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug, Clone, AsChangeset)]
+#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug, Clone, AsChangeset, FromForm)]
 #[table_name="taxes"]
 pub struct Tax {
     pub id: i32,

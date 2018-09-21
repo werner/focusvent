@@ -1,6 +1,15 @@
 #[macro_export]
 macro_rules! basic_handler_actions {
     ($resource:expr, $model:ident, $new_model:ident) => {
+
+        impl ::std::str::FromStr for $model {
+            type Err = ::serde_json::Error;
+
+            fn from_str(s: &str) -> Result<Self, Self::Err> {
+                ::serde_json::from_str(s)
+            }
+        }
+
         pub static STATIC_ROCKET_ROUTE_INFO_FOR_INDEX: ::rocket::StaticRouteInfo =
             ::rocket::StaticRouteInfo {
                 method: ::rocket::http::Method::Get,
@@ -15,7 +24,7 @@ macro_rules! basic_handler_actions {
             __data: ::rocket::Data,
         ) -> ::rocket::handler::Outcome<'_b> {
             #[allow(non_snake_case)]
-            let rocket_param_params: GetTransactionParams = {
+            let rocket_param_params: GetTransactionParams<$model> = {
                 let mut items = ::rocket::request::FormItems::from(match __req.uri().query() {
                     Some(query) => query,
                     None => return ::rocket::Outcome::Forward(__data),
@@ -60,7 +69,7 @@ macro_rules! basic_handler_actions {
         }
 
         pub fn index(
-            params: GetTransactionParams,
+            params: GetTransactionParams<$model>,
         ) -> Result<Json<Vec<$model>>, status::Custom<String>> {
             match $model::list(params.limit.unwrap_or(10), params.offset.unwrap_or(0)) {
                 Ok(records) => Ok(Json(records)),

@@ -5,7 +5,7 @@ use schema::prices;
 use schema::prices::dsl::*;
 use basic_model_actions;
 
-#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug, Clone, AsChangeset)]
+#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug, Clone, AsChangeset, FromForm)]
 pub struct Price {
     pub id: i32,
     pub name: String
