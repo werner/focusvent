@@ -3,6 +3,7 @@ use handlers::prices;
 use handlers::costs;
 use handlers::suppliers;
 use handlers::clients;
+use handlers::taxes;
 use rocket;
 
 pub fn routes() -> Vec<rocket::Route> {
@@ -26,7 +27,12 @@ pub fn routes() -> Vec<rocket::Route> {
             suppliers::show_route(),
             suppliers::create_route(),
             suppliers::update_route(),
-            suppliers::delete_route()];
+            suppliers::delete_route(),
+            taxes::index_route(),
+            taxes::show_route(),
+            taxes::create_route(),
+            taxes::update_route(),
+            taxes::delete_route()];
 
     let mut automatic_routes =
         routes![products::index,
