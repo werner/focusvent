@@ -53,6 +53,29 @@ table! {
 }
 
 table! {
+    sale_products (id) {
+        id -> Int4,
+        sale_id -> Int4,
+        tax_id -> Int4,
+        product_id -> Int4,
+        amount -> Nullable<Float8>,
+        price -> Nullable<Int4>,
+        discount -> Nullable<Int4>,
+        subtotal -> Nullable<Int4>,
+    }
+}
+
+table! {
+    sales (id) {
+        id -> Int4,
+        client_id -> Int4,
+        sale_date -> Nullable<Date>,
+        sub_total -> Nullable<Int4>,
+        total -> Nullable<Int4>,
+    }
+}
+
+table! {
     suppliers (id) {
         id -> Int4,
         first_name -> Nullable<Varchar>,
@@ -76,6 +99,10 @@ joinable!(product_costs -> products (product_id));
 joinable!(product_costs -> suppliers (supplier_id));
 joinable!(product_prices -> prices (price_id));
 joinable!(product_prices -> products (product_id));
+joinable!(sale_products -> products (product_id));
+joinable!(sale_products -> sales (sale_id));
+joinable!(sale_products -> taxes (tax_id));
+joinable!(sales -> clients (client_id));
 
 allow_tables_to_appear_in_same_query!(
     clients,
@@ -84,6 +111,8 @@ allow_tables_to_appear_in_same_query!(
     product_costs,
     product_prices,
     products,
+    sale_products,
+    sales,
     suppliers,
     taxes,
 );
