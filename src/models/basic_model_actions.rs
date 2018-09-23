@@ -3,15 +3,15 @@ macro_rules! basic_model_actions {
     ($table_model:ident, $type_model:ty, $new_type_model:ty) => {
 
         pub trait BasicModelActions {
-            fn list(limit: i64, offset: i64) -> Result<Vec<$type_model>, diesel::result::Error> {
-                use schema::$table_model::dsl::*;
-                let connection = ::models::db_connection::establish_connection();
+            // fn list(limit: i64, offset: i64) -> Result<Vec<$type_model>, diesel::result::Error> {
+            //     use schema::$table_model::dsl::*;
+            //     let connection = ::models::db_connection::establish_connection();
 
-                $table_model
-                    .limit(limit)
-                    .offset(offset)
-                    .load::<$type_model>(&connection)
-            }
+            //     $table_model
+            //         .limit(limit)
+            //         .offset(offset)
+            //         .load::<$type_model>(&connection)
+            // }
 
             fn create(new_type_model: $new_type_model) -> Result<$type_model, diesel::result::Error> {
                 let connection = ::models::db_connection::establish_connection();
