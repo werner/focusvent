@@ -2,10 +2,10 @@ use std::io::Read;
 use diesel;
 use diesel::prelude::*;
 use schema::costs;
-use schema::costs::dsl::*;
 use basic_model_actions;
 
-#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug, AsChangeset)]
+#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash,
+         Debug, AsChangeset, FromForm)]
 pub struct Cost {
     pub id: i32,
     pub name: String

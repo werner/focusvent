@@ -2,7 +2,6 @@ use std::io::Read;
 use diesel;
 use diesel::prelude::*;
 use schema::prices;
-use schema::prices::dsl::*;
 use basic_model_actions;
 
 #[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug, Clone, AsChangeset, FromForm)]

@@ -4,6 +4,7 @@ macro_rules! basic_model_actions {
 
         pub trait BasicModelActions {
             fn list(limit: i64, offset: i64) -> Result<Vec<$type_model>, diesel::result::Error> {
+                use schema::$table_model::dsl::*;
                 let connection = ::models::db_connection::establish_connection();
 
                 $table_model

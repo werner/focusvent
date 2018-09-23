@@ -3,7 +3,6 @@ use diesel;
 use diesel::QueryDsl;
 use diesel::RunQueryDsl;
 use schema::suppliers;
-use schema::suppliers::dsl::*;
 use basic_model_actions;
 
 #[derive(Serialize, Deserialize, Clone, Queryable, Debug, AsChangeset, FromForm)]

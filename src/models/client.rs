@@ -3,10 +3,9 @@ use diesel;
 use diesel::QueryDsl;
 use diesel::RunQueryDsl;
 use schema::clients;
-use schema::clients::dsl::*;
 use basic_model_actions;
 
-#[derive(Serialize, Deserialize, Clone, Queryable, Debug, AsChangeset)]
+#[derive(Serialize, Deserialize, Clone, Queryable, Debug, AsChangeset, FromForm)]
 pub struct Client {
     pub id: i32,
     pub first_name: Option<String>,
