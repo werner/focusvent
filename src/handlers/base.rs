@@ -7,7 +7,7 @@ pub struct Search<S>(S);
 
 #[derive(FromForm)]
 pub struct GetTransactionParams<S: std::str::FromStr> {
-    pub search: Search<S>,
+    pub search: Option<Search<S>>,
     pub limit: Option<i64>,
     pub offset: Option<i64>,
 }
