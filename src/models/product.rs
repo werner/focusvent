@@ -1,6 +1,7 @@
 use std::io::Read;
 use diesel;
 use diesel::prelude::*;
+use handlers::base::Search;
 use models::db_connection::*;
 use models::product_price::ProductPrice;
 use models::product_price::EditableProductPrice;
@@ -45,14 +46,28 @@ pub struct FullProduct {
 }
 
 impl Product {
-    pub fn list(limit: i64, offset: i64) -> Result<Vec<Product>, diesel::result::Error> {
+    pub fn list(limit: i64, offset: i64, search: Option<Search<Product>>) -> Result<Vec<Product>, diesel::result::Error> {
         use schema::products::dsl::*;
-
         let connection = establish_connection();
-        products
-            .limit(limit)
-            .offset(offset)
-            .load(&connection)
+        
+        let results: Result<Vec<Product>, diesel::result::Error>;
+        let product_to_search: Product;
+        if let Some(search_product) = search {
+            let Search(_product) = search_product;
+            product_to_search = _product;
+            results = products
+                .filter(name.like(product_to_search.name))
+                .limit(limit)
+                .offset(offset)
+                .load(&connection);
+        } else {
+            results = products
+                .limit(limit)
+                .offset(offset)
+                .load(&connection);
+        }
+
+        results
     }
 
     pub fn show(request_id: i32) -> Result<FullProduct, diesel::result::Error> {

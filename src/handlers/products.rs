@@ -8,7 +8,7 @@ use models::product::FullNewProduct;
 
 #[get("/products?<params>")]
 pub fn index(params: GetTransactionParams<Product>) -> Result<Json<Vec<Product>>, status::Custom<String>> {
-    match Product::list(params.limit.unwrap_or(10), params.offset.unwrap_or(0)) {
+    match Product::list(params.limit.unwrap_or(10), params.offset.unwrap_or(0), params.search) {
         Ok(products) => Ok(Json(products)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
     }

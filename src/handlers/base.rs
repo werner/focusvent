@@ -3,7 +3,8 @@ use rocket::http::RawStr;
 use rocket::request::FromFormValue;
 use std::ops::Deref;
 
-pub struct Search<S>(S);
+#[derive(Debug)]
+pub struct Search<S>(pub S);
 
 #[derive(FromForm)]
 pub struct GetTransactionParams<S: std::str::FromStr> {
