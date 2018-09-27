@@ -1,4 +1,7 @@
 use diesel::prelude::Insertable;
+use diesel::expression::AppearsOnTable;
+use diesel::expression::Expression;
+use diesel::sql_types::Date;
 use chrono::NaiveDate;
 use rocket::http::RawStr;
 use rocket::request::FromFormValue;
@@ -24,4 +27,10 @@ impl Deref for NaiveDateForm{
     fn deref(&self)-> &NaiveDate{
         &self.0
     }
+}
+
+impl<QS> AppearsOnTable<QS> for NaiveDateForm {}
+
+impl Expression for NaiveDateForm {
+    type SqlType = Date;
 }

@@ -5,7 +5,7 @@ use diesel::prelude::*;
 use models::naive_date_form::NaiveDateForm;
 use schema::sales;
 
-#[derive(Serialize, Deserialize, Clone, Queryable, Debug, FromForm)]
+#[derive(AsChangeset, Serialize, Deserialize, Clone, Queryable, Debug, FromForm)]
 pub struct Sale {
     pub id: i32,
     pub client_id: i32,

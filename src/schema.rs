@@ -69,7 +69,7 @@ table! {
     sales (id) {
         id -> Int4,
         client_id -> Int4,
-        sale_date -> Nullable<Date>,
+        sale_date -> Date,
         sub_total -> Nullable<Int4>,
         total -> Nullable<Int4>,
         observation -> Nullable<Text>,
