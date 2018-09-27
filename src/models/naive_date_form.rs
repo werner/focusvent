@@ -1,4 +1,3 @@
-use diesel::prelude::Insertable;
 use diesel::expression::AppearsOnTable;
 use diesel::expression::Expression;
 use diesel::sql_types::Date;
