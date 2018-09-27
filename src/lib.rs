@@ -14,6 +14,7 @@ extern crate serde_json;
 #[macro_use]
 extern crate diesel;
 extern crate dotenv;
+extern crate chrono;
 
 pub mod handlers;
 pub mod routes;

@@ -72,6 +72,7 @@ table! {
         sale_date -> Nullable<Date>,
         sub_total -> Nullable<Int4>,
         total -> Nullable<Int4>,
+        observation -> Nullable<Text>,
     }
 }
 

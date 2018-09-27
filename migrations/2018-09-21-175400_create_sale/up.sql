@@ -5,5 +5,6 @@ CREATE TABLE sales(
     client_id INTEGER NOT NULL REFERENCES clients(id),
     sale_date DATE,
     sub_total INTEGER,
-    total INTEGER
+    total INTEGER,
+    observation TEXT
 );
