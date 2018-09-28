@@ -1,6 +1,8 @@
 use std::io::Read;
 use diesel;
 use diesel::prelude::*;
+use diesel::expression::operators::Like;
+use diesel::expression::bound::Bound;
 use handlers::base::Search;
 use models::db_connection::*;
 use models::product_price::ProductPrice;
@@ -18,6 +20,15 @@ use schema::products;
 pub struct Product {
     pub id: i32,
     pub name: String,
+    pub description: Option<String>,
+    pub stock: Option<f64>,
+    pub code: Option<String>
+}
+
+#[derive(Serialize, Deserialize, FromForm)]
+pub struct SearchProduct {
+    pub id: Option<i32>,
+    pub name: Option<String>,
     pub description: Option<String>,
     pub stock: Option<f64>,
     pub code: Option<String>
@@ -46,17 +57,37 @@ pub struct FullProduct {
 }
 
 impl Product {
-    pub fn list(limit: i64, offset: i64, search: Option<Search<Product>>) -> Result<Vec<Product>, diesel::result::Error> {
+    pub fn list(limit: i64, offset: i64, search: Option<Search<SearchProduct>>) -> Result<Vec<Product>, diesel::result::Error> {
         use schema::products::dsl::*;
+        use schema::products;
         let connection = establish_connection();
         
         let results: Result<Vec<Product>, diesel::result::Error>;
-        let product_to_search: Product;
         if let Some(search_product) = search {
             let Search(_product) = search_product;
-            product_to_search = _product;
-            results = products
-                .filter(name.like(product_to_search.name))
+
+            let mut query = products::table.into_boxed::<diesel::pg::Pg>();
+            if let Some(name_product) = _product.name {
+                query = query.filter(products::name.like(name_product));
+            }
+
+            if let Some(id_product) = _product.id {
+                query = query.filter(id.eq(id_product));
+            }
+
+            if let Some(description_product) = _product.description {
+                query = query.filter(description.like(description_product));
+            }
+
+            if let Some(code_product) = _product.code {
+                query = query.filter(code.like(code_product));
+            }
+
+            if let Some(stock_product) = _product.stock {
+                query = query.filter(stock.eq(stock_product));
+            }
+
+            results = query
                 .limit(limit)
                 .offset(offset)
                 .load(&connection);
@@ -192,6 +223,14 @@ use std::str::FromStr;
 use serde_json;
 
 impl FromStr for Product {
+    type Err = serde_json::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        serde_json::from_str(s)
+    }
+}
+
+impl FromStr for SearchProduct {
     type Err = serde_json::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
