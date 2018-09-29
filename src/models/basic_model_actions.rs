@@ -1,13 +1,15 @@
 #[macro_export]
 macro_rules! basic_model_actions {
-    ($table_model:ident, $type_model:ty, $new_type_model:ty) => {
+    ($table_model:ident, $type_model:ident, $new_type_model:ty, $search_struct:ident) => {
 
         pub trait BasicModelActions {
-            fn list(limit: i64, offset: i64) -> Result<Vec<$type_model>, diesel::result::Error> {
-                use schema::$table_model::dsl::*;
+            fn list(limit: i64, offset: i64, search: Option<::handlers::base::Search<$search_struct>>) ->
+                Result<Vec<$type_model>, diesel::result::Error> {
                 let connection = ::models::db_connection::establish_connection();
 
-                $table_model
+                let query = $type_model::searching_records(search);
+
+                query
                     .limit(limit)
                     .offset(offset)
                     .load::<$type_model>(&connection)

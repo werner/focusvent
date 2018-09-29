@@ -1,8 +1,8 @@
 #[macro_export]
 macro_rules! basic_handler_actions {
-    ($resource:expr, $model:ident, $new_model:ident) => {
+    ($resource:expr, $model:ident, $new_model:ident, $search_model:ty) => {
 
-        impl ::std::str::FromStr for $model {
+        impl ::std::str::FromStr for $search_model {
             type Err = ::serde_json::Error;
 
             fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -24,7 +24,7 @@ macro_rules! basic_handler_actions {
             __data: ::rocket::Data,
         ) -> ::rocket::handler::Outcome<'_b> {
             #[allow(non_snake_case)]
-            let rocket_param_params: GetTransactionParams<$model> = {
+            let rocket_param_params: GetTransactionParams<$search_model> = {
                 let mut items = ::rocket::request::FormItems::from(match __req.uri().query() {
                     Some(query) => query,
                     None => return ::rocket::Outcome::Forward(__data),
@@ -69,9 +69,9 @@ macro_rules! basic_handler_actions {
         }
 
         pub fn index(
-            params: GetTransactionParams<$model>,
+            params: GetTransactionParams<$search_model>,
         ) -> Result<Json<Vec<$model>>, status::Custom<String>> {
-            match $model::list(params.limit.unwrap_or(10), params.offset.unwrap_or(0)) {
+            match $model::list(params.limit.unwrap_or(10), params.offset.unwrap_or(0), params.search) {
                 Ok(records) => Ok(Json(records)),
                 Err(error) => Err(status::Custom(
                     Status::InternalServerError,
