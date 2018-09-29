@@ -1,8 +1,7 @@
 use std::io::Read;
 use diesel;
 use diesel::prelude::*;
-use diesel::expression::operators::Like;
-use diesel::expression::bound::Bound;
+use diesel::sql_types;
 use handlers::base::Search;
 use models::db_connection::*;
 use models::product_price::ProductPrice;
@@ -14,6 +13,7 @@ use models::product_cost::EditableProductCost;
 use models::product_cost::FullProductCost;
 use models::cost::Cost;
 use models::supplier::Supplier;
+use schema;
 use schema::products;
 
 #[derive(Serialize, Deserialize, Clone, Queryable, Debug, FromForm)]
@@ -25,7 +25,7 @@ pub struct Product {
     pub code: Option<String>
 }
 
-#[derive(Serialize, Deserialize, FromForm)]
+#[derive(Serialize, Deserialize, Debug, FromForm)]
 pub struct SearchProduct {
     pub id: Option<i32>,
     pub name: Option<String>,
@@ -56,49 +56,25 @@ pub struct FullProduct {
     pub costs: Vec<FullProductCost>
 }
 
+type BoxedQuery<'a> = 
+    diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer,
+                                                     sql_types::Text,
+                                                     sql_types::Nullable<sql_types::Text>,
+                                                     sql_types::Nullable<sql_types::Double>,
+                                                     sql_types::Nullable<sql_types::Text>),
+                                                     schema::products::table, diesel::pg::Pg>;
+
 impl Product {
-    pub fn list(limit: i64, offset: i64, search: Option<Search<SearchProduct>>) -> Result<Vec<Product>, diesel::result::Error> {
-        use schema::products::dsl::*;
-        use schema::products;
-        let connection = establish_connection();
-        
-        let results: Result<Vec<Product>, diesel::result::Error>;
-        if let Some(search_product) = search {
-            let Search(_product) = search_product;
+    pub fn list(limit: i64, offset: i64, search: Option<Search<SearchProduct>>) ->
+        Result<Vec<Product>, diesel::result::Error> {
+            let connection = establish_connection();
+            
+            let query = Self::searching_product(search);
 
-            let mut query = products::table.into_boxed::<diesel::pg::Pg>();
-            if let Some(name_product) = _product.name {
-                query = query.filter(products::name.like(name_product));
-            }
-
-            if let Some(id_product) = _product.id {
-                query = query.filter(id.eq(id_product));
-            }
-
-            if let Some(description_product) = _product.description {
-                query = query.filter(description.like(description_product));
-            }
-
-            if let Some(code_product) = _product.code {
-                query = query.filter(code.like(code_product));
-            }
-
-            if let Some(stock_product) = _product.stock {
-                query = query.filter(stock.eq(stock_product));
-            }
-
-            results = query
+            query
                 .limit(limit)
                 .offset(offset)
-                .load(&connection);
-        } else {
-            results = products
-                .limit(limit)
-                .offset(offset)
-                .load(&connection);
-        }
-
-        results
+                .load(&connection)
     }
 
     pub fn show(request_id: i32) -> Result<FullProduct, diesel::result::Error> {
@@ -201,6 +177,33 @@ impl Product {
 
         diesel::delete(products.find(param_id))
             .execute(&connection)
+    }
+
+    fn searching_product<'a>(search: Option<Search<SearchProduct>>) -> BoxedQuery<'a> {
+        use schema::products::dsl::*;
+
+        let mut query = schema::products::table.into_boxed::<diesel::pg::Pg>();
+
+        if let Some(search_product) = search {
+            let Search(product) = search_product;
+            if let Some(product_name) = product.name {
+                query = query.filter(name.like(product_name));
+            }
+            if let Some(product_id) = product.id {
+                query = query.filter(id.eq(product_id));
+            }
+            if let Some(product_description) = product.description {
+                query = query.filter(description.like(product_description));
+            }
+            if let Some(product_code) = product.code {
+                query = query.filter(code.like(product_code));
+            }
+            if let Some(product_stock) = product.stock {
+                query = query.filter(stock.eq(product_stock));
+            }
+        }
+
+        query
     }
 
     fn blank_product() -> Product {

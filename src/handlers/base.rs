@@ -6,7 +6,7 @@ use std::ops::Deref;
 #[derive(Debug)]
 pub struct Search<S>(pub S);
 
-#[derive(FromForm)]
+#[derive(FromForm, Debug)]
 pub struct GetTransactionParams<S: std::str::FromStr> {
     pub search: Option<Search<S>>,
     pub limit: Option<i64>,

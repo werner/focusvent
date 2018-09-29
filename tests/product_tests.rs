@@ -230,10 +230,22 @@ pub fn index(client: &Client, connection: &PgConnection) {
 
     let product = create_product(client);
     let product2 = create_product_with_price(client);
-    let mut response = client.get("/products?offset=0&limit=10&search=123").dispatch();
+    let mut response = client.get("/products?offset=0&limit=10").dispatch();
     assert_eq!(response.status(), Status::Ok);
     let string = format!(r#"[{{"id":{},"name":"Shoe","description":"for the feet","stock":0.0,"code":null}},{{"id":{},"name":"Hat","description":"for the head","stock":0.0,"code":null}}]"#,
                         product.id, product2.id);
+    assert_eq!(Some(string), response.body_string());
+}
+
+pub fn index_search(client: &Client, connection: &PgConnection) {
+    clear(connection);
+
+    let product = create_product(client);
+    create_product_with_price(client);
+    let mut response = client.get("/products?offset=0&limit=10&search={\"name\": \"Shoe\"}").dispatch();
+    assert_eq!(response.status(), Status::Ok);
+    let string = format!(r#"[{{"id":{},"name":"Shoe","description":"for the feet","stock":0.0,"code":null}}]"#,
+                        product.id);
     assert_eq!(Some(string), response.body_string());
 }
 

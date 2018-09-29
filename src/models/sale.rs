@@ -1,7 +1,4 @@
 use std::io::Read;
-use chrono::NaiveDate;
-use diesel;
-use diesel::prelude::*;
 use models::naive_date_form::NaiveDateForm;
 use schema::sales;
 
