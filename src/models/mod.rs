@@ -7,6 +7,7 @@ pub mod tax;
 pub mod product_price;
 pub mod product_cost;
 pub mod sale;
+pub mod sale_product;
 pub mod naive_date_form;
 pub mod db_connection;
 

@@ -1,10 +1,13 @@
-use diesel::expression::AppearsOnTable;
-use diesel::expression::Expression;
+use diesel::expression::{ AppearsOnTable, Expression, NonAggregate };
+use diesel::query_builder::{ AstPass, QueryFragment };
 use diesel::sql_types::Date;
+use diesel::pg::Pg;
+use diesel::result::QueryResult;
 use chrono::NaiveDate;
 use rocket::http::RawStr;
 use rocket::request::FromFormValue;
 use std::ops::Deref;
+use diesel::deserialize::Queryable;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct NaiveDateForm(NaiveDate);
@@ -32,4 +35,13 @@ impl<QS> AppearsOnTable<QS> for NaiveDateForm {}
 
 impl Expression for NaiveDateForm {
     type SqlType = Date;
+}
+
+impl NonAggregate for NaiveDateForm { }
+
+impl QueryFragment<Pg> for NaiveDateForm {
+    fn walk_ast(&self, mut out: AstPass<Pg>) -> QueryResult<()> {
+        out.push_sql(" DATE");
+        Ok(())
+    }
 }
