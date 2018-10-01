@@ -153,7 +153,6 @@ impl Product {
     }
 
     pub fn update(param_id: i32, full_product: FullNewProduct) -> Result<Product, diesel::result::Error> {
-        use schema::products::dsl::name;
         use schema::products::dsl::*;
         let connection = establish_connection();
 

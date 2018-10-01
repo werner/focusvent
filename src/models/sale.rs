@@ -83,6 +83,25 @@ impl Sale {
         sale
     }
 
+    pub fn update(param_id: i32, full_sale: FullNewSale) -> Result<Sale, diesel::result::Error> {
+        use schema::sales::dsl::*;
+        let connection = establish_connection();
+
+        let sale = diesel::update(sales.find(param_id))
+            .set((client_id.eq(full_sale.sale.client_id),
+                  sale_date.eq(&full_sale.sale.sale_date),
+                  observation.eq(&full_sale.sale.observation),
+                  sub_total.eq(full_sale.sale.calculate_sub_total()),
+                  total.eq(full_sale.sale.calculate_total())))
+            .get_result::<Sale>(&connection);
+
+        if let Ok(db_sale) = &sale {
+            SaleProduct::batch_action(full_sale.sale_products, db_sale.id)?;
+        }
+
+        sale
+    }
+
     fn searching_records<'a>(search: Option<Search<SearchSale>>) -> BoxedQuery<'a> {
         use schema::sales::dsl::*;
 
@@ -102,6 +121,15 @@ impl Sale {
         }
 
         query
+    }
+}
+
+impl NewSale {
+    pub fn calculate_sub_total(&self) -> Option<i32> {
+        unimplemented!()
+    }
+    pub fn calculate_total(&self) -> Option<i32> {
+        unimplemented!()
     }
 }
 
