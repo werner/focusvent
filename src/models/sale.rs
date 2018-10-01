@@ -2,11 +2,13 @@ use std::io::Read;
 use diesel;
 use diesel::sql_types;
 use diesel::prelude::*;
+use models::db_connection::*;
 use models::naive_date_form::NaiveDateForm;
+use models::sale_product::SaleProduct;
+use models::sale_product::NewSaleProduct;
 use schema;
 use schema::sales;
 use handlers::base::Search;
-use basic_model_actions;
 
 type BoxedQuery<'a> = 
     diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer,
@@ -37,6 +39,12 @@ pub struct NewSale {
     pub observation: Option<String>
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct FullNewSale {
+    sale: NewSale,
+    sale_products: Vec<NewSaleProduct>
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone, FromForm)]
 pub struct SearchSale {
     pub id: Option<i32>,
@@ -48,6 +56,32 @@ pub struct SearchSale {
 }
 
 impl Sale {
+    pub fn list(limit: i64, offset: i64, search: Option<Search<SearchSale>>) ->
+        Result<Vec<Sale>, diesel::result::Error> {
+            let connection = establish_connection();
+            
+            let query = Self::searching_records(search);
+
+            query
+                .limit(limit)
+                .offset(offset)
+                .load(&connection)
+    }
+
+
+    pub fn create(full_new_sale: FullNewSale) -> Result<Sale, diesel::result::Error> {
+        let connection = establish_connection();
+
+        let sale: Result<Sale, diesel::result::Error> = diesel::insert_into(sales::table)
+            .values(&full_new_sale.sale)
+            .get_result(&connection);
+
+        if let Ok(db_sale) = &sale {
+            SaleProduct::batch_action(full_new_sale.sale_products, db_sale.id)?;
+        }
+
+        sale
+    }
 
     fn searching_records<'a>(search: Option<Search<SearchSale>>) -> BoxedQuery<'a> {
         use schema::sales::dsl::*;
@@ -70,6 +104,6 @@ impl Sale {
         query
     }
 }
-basic_model_actions!(sales, Sale, NewSale, SearchSale);
+
 from_data!(Sale);
 from_data!(NewSale);
