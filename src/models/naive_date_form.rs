@@ -45,3 +45,11 @@ impl QueryFragment<Pg> for NaiveDateForm {
         Ok(())
     }
 }
+
+impl Queryable<Date, Pg> for NaiveDateForm {
+    type Row = NaiveDate;
+
+    fn build(row: Self::Row) -> Self {
+        NaiveDateForm(row)
+    }
+}
