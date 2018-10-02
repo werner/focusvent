@@ -42,6 +42,12 @@ pub struct NewSale {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct FullSale {
+    sale: Sale,
+    sale_products: Vec<SaleProduct>
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct FullNewSale {
     sale: NewSale,
     sale_products: Vec<NewSaleProduct>
@@ -70,6 +76,25 @@ impl Sale {
                 .load(&connection)
     }
 
+    pub fn show(request_id: i32) -> Result<FullSale, diesel::result::Error> {
+        use schema::sales::dsl::*;
+        use schema::sale_products;
+
+        let connection = establish_connection();
+
+        let sale_result = sales
+            .find(request_id)
+            .get_result::<Sale>(&connection)?;
+
+        let sale_products_result = sale_products::dsl::sale_products
+            .filter(sale_products::dsl::sale_id.eq(sale_result.id))
+            .load::<SaleProduct>(&connection)?;
+
+        Ok(FullSale {
+            sale: sale_result,
+            sale_products: sale_products_result
+        })
+    }
 
     pub fn create(full_new_sale: FullNewSale) -> Result<Sale, diesel::result::Error> {
         let connection = establish_connection();
