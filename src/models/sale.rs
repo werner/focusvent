@@ -104,6 +104,14 @@ impl Sale {
         sale
     }
 
+    pub fn delete(param_id: i32) -> Result<usize, diesel::result::Error> {
+        use schema::sales::dsl::*;
+        let connection = establish_connection();
+
+        diesel::delete(sales.find(param_id))
+            .execute(&connection)
+    }
+
     fn searching_records<'a>(search: Option<Search<SearchSale>>) -> BoxedQuery<'a> {
         use schema::sales::dsl::*;
 
