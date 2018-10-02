@@ -92,47 +92,44 @@ impl Product {
                 prices: vec![],
                 costs: vec![]
             };
-        let vec_products = products
+        let db_product = products
             .find(request_id)
-            .load::<Product>(&connection)?;
+            .get_result::<Product>(&connection)?;
 
-        for db_product in vec_products.into_iter() {
+        let vec_product_costs = product_costs::dsl::product_costs
+            .filter(product_costs::dsl::product_id.eq(db_product.id))
+            .inner_join(costs::dsl::costs)
+            .inner_join(suppliers::dsl::suppliers)
+            .order(costs::name)
+            .load::<(ProductCost, Cost, Supplier)>(&connection)?;
 
-            let vec_product_costs = product_costs::dsl::product_costs
-                .filter(product_costs::dsl::product_id.eq(db_product.id))
-                .inner_join(costs::dsl::costs)
-                .inner_join(suppliers::dsl::suppliers)
-                .order(costs::name)
-                .load::<(ProductCost, Cost, Supplier)>(&connection)?;
+        let vec_product_prices = product_prices::dsl::product_prices
+            .filter(product_prices::dsl::product_id.eq(db_product.id))
+            .inner_join(prices::dsl::prices)
+            .order(prices::name)
+            .load::<(ProductPrice, Price)>(&connection)?;
 
-            let vec_product_prices = product_prices::dsl::product_prices
-                .filter(product_prices::dsl::product_id.eq(db_product.id))
-                .inner_join(prices::dsl::prices)
-                .order(prices::name)
-                .load::<(ProductPrice, Price)>(&connection)?;
+        full_product.product = db_product;
 
-            full_product.product = db_product;
+        for (product_price, price) in vec_product_prices {
+            full_product.prices.push(
+                FullProductPrice {
+                    price_id: price.id,
+                    price: product_price.price,
+                    name: price.name
+                }
+            );
+        }
 
-            for (product_price, price) in vec_product_prices {
-                full_product.prices.push(
-                    FullProductPrice {
-                        price_id: price.id,
-                        price: product_price.price,
-                        name: price.name
-                    }
-                );
-            }
-
-            for (product_cost, cost, supplier) in vec_product_costs {
-                full_product.costs.push(
-                    FullProductCost {
-                        cost_id: cost.id,
-                        supplier_id: supplier.id,
-                        cost: product_cost.cost,
-                        name: cost.name
-                    }
-                );
-            }
+        for (product_cost, cost, supplier) in vec_product_costs {
+            full_product.costs.push(
+                FullProductCost {
+                    cost_id: cost.id,
+                    supplier_id: supplier.id,
+                    cost: product_cost.cost,
+                    name: cost.name
+                }
+            );
         }
         Ok(full_product)
     }
