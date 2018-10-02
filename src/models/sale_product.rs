@@ -6,42 +6,43 @@ use diesel::ExpressionMethods;
 use diesel::BoolExpressionMethods;
 use schema::sale_products;
 use models::db_connection::*;
+use models::item_calc_methods::ItemCalcMethod;
 
 #[derive(AsChangeset, Insertable, Serialize, Deserialize, Clone,
          Queryable, Debug, FromForm)]
 pub struct SaleProduct {
     pub id: i32,
     pub sale_id: i32,
-    pub tax_id: i32,
     pub product_id: i32,
+    pub tax: Option<i32>,
     pub amount: Option<f64>,
     pub price: Option<i32>,
     pub discount: Option<i32>,
-    pub subtotal: Option<i32>
+    pub subtotal: Option<f64>
 }
 
 #[derive(Insertable, Serialize, Deserialize, Clone, Debug, FromForm)]
 #[table_name="sale_products"]
 pub struct NewSaleProduct {
     pub sale_id: i32,
-    pub tax_id: i32,
     pub product_id: i32,
+    pub tax: Option<i32>,
     pub amount: Option<f64>,
     pub price: Option<i32>,
     pub discount: Option<i32>,
-    pub subtotal: Option<i32>
+    pub subtotal: Option<f64>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, FromForm)]
 pub struct SearchSaleProduct {
     pub id: Option<i32>,
     pub sale_id: Option<i32>,
-    pub tax_id: Option<i32>,
     pub product_id: Option<i32>,
+    pub tax: Option<i32>,
     pub amount: Option<f64>,
     pub price: Option<i32>,
     pub discount: Option<i32>,
-    pub subtotal: Option<i32>
+    pub subtotal: Option<f64>
 }
 
 impl SaleProduct {
@@ -59,7 +60,7 @@ impl SaleProduct {
 
             if let Ok(edit_sale_product) = result_sale_product {
                 diesel::update(dsl::sale_products.find(edit_sale_product.id))
-                    .set((dsl::tax_id.eq(new_sale_product.tax_id),
+                    .set((dsl::tax.eq(new_sale_product.tax),
                           dsl::amount.eq(new_sale_product.amount),
                           dsl::price.eq(new_sale_product.price),
                           dsl::discount.eq(new_sale_product.discount),
@@ -77,8 +78,13 @@ impl SaleProduct {
 }
 
 impl NewSaleProduct {
-    fn calculate_total(&self) -> Option<i32> {
-        unimplemented!()
+    pub fn to_item_calc_method(&self) -> ItemCalcMethod {
+        ItemCalcMethod::new(self.tax, self.discount, self.price, self.amount)
+    }
+
+    pub fn calculate_total(&self) -> Option<f64> {
+        let item_calc = self.to_item_calc_method();
+        Some(item_calc.calculate_total())
     }
 }
 

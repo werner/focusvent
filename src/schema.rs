@@ -56,12 +56,12 @@ table! {
     sale_products (id) {
         id -> Int4,
         sale_id -> Int4,
-        tax_id -> Int4,
         product_id -> Int4,
+        tax -> Nullable<Int4>,
         amount -> Nullable<Float8>,
         price -> Nullable<Int4>,
         discount -> Nullable<Int4>,
-        subtotal -> Nullable<Int4>,
+        subtotal -> Nullable<Float8>,
     }
 }
 
@@ -70,8 +70,8 @@ table! {
         id -> Int4,
         client_id -> Int4,
         sale_date -> Date,
-        sub_total -> Nullable<Int4>,
-        total -> Nullable<Int4>,
+        sub_total -> Nullable<Float8>,
+        total -> Nullable<Float8>,
         observation -> Nullable<Text>,
     }
 }
@@ -102,7 +102,6 @@ joinable!(product_prices -> prices (price_id));
 joinable!(product_prices -> products (product_id));
 joinable!(sale_products -> products (product_id));
 joinable!(sale_products -> sales (sale_id));
-joinable!(sale_products -> taxes (tax_id));
 joinable!(sales -> clients (client_id));
 
 allow_tables_to_appear_in_same_query!(

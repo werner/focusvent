@@ -9,6 +9,8 @@ pub mod product_cost;
 pub mod sale;
 pub mod sale_product;
 pub mod naive_date_form;
+pub mod item_calc_methods;
+pub mod calc_methods;
 pub mod db_connection;
 
 #[macro_use]

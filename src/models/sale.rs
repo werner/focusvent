@@ -6,6 +6,8 @@ use models::db_connection::*;
 use models::naive_date_form::NaiveDateForm;
 use models::sale_product::SaleProduct;
 use models::sale_product::NewSaleProduct;
+use models::calc_methods::CalcMethods;
+use models::item_calc_methods::ItemCalcMethod;
 use schema;
 use schema::sales;
 use handlers::base::Search;
@@ -14,8 +16,8 @@ type BoxedQuery<'a> =
     diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer,
                                                      sql_types::Integer,
                                                      sql_types::Date,
-                                                     sql_types::Nullable<sql_types::Integer>,
-                                                     sql_types::Nullable<sql_types::Integer>,
+                                                     sql_types::Nullable<sql_types::Double>,
+                                                     sql_types::Nullable<sql_types::Double>,
                                                      sql_types::Nullable<sql_types::Text>),
                                                      schema::sales::table, diesel::pg::Pg>;
 
@@ -24,8 +26,8 @@ pub struct Sale {
     pub id: i32,
     pub client_id: i32,
     pub sale_date: NaiveDateForm,
-    pub sub_total: Option<i32>,
-    pub total: Option<i32>,
+    pub sub_total: Option<f64>,
+    pub total: Option<f64>,
     pub observation: Option<String>
 }
 
@@ -34,8 +36,8 @@ pub struct Sale {
 pub struct NewSale {
     pub client_id: i32,
     pub sale_date: NaiveDateForm,
-    pub sub_total: Option<i32>,
-    pub total: Option<i32>,
+    pub sub_total: Option<f64>,
+    pub total: Option<f64>,
     pub observation: Option<String>
 }
 
@@ -50,8 +52,8 @@ pub struct SearchSale {
     pub id: Option<i32>,
     pub client_id: Option<i32>,
     pub sale_date: Option<NaiveDateForm>,
-    pub sub_total: Option<i32>,
-    pub total: Option<i32>,
+    pub sub_total: Option<f64>,
+    pub total: Option<f64>,
     pub observation: Option<String>
 }
 
@@ -91,8 +93,8 @@ impl Sale {
             .set((client_id.eq(full_sale.sale.client_id),
                   sale_date.eq(&full_sale.sale.sale_date),
                   observation.eq(&full_sale.sale.observation),
-                  sub_total.eq(full_sale.sale.calculate_sub_total()),
-                  total.eq(full_sale.sale.calculate_total())))
+                  sub_total.eq(full_sale.calculate_sub_total()),
+                  total.eq(full_sale.calculate_total())))
             .get_result::<Sale>(&connection);
 
         if let Ok(db_sale) = &sale {
@@ -124,12 +126,24 @@ impl Sale {
     }
 }
 
-impl NewSale {
-    pub fn calculate_sub_total(&self) -> Option<i32> {
-        unimplemented!()
+impl FullNewSale {
+    pub fn calculate_sub_total(&self) -> Option<f64> {
+        let items = self
+                   .sale_products
+                   .iter()
+                   .map(|new_sale_product| new_sale_product.to_item_calc_method())
+                   .collect::<Vec<ItemCalcMethod>>();
+        let calc_method = CalcMethods::new(items);
+        Some(calc_method.subtotal())
     }
-    pub fn calculate_total(&self) -> Option<i32> {
-        unimplemented!()
+    pub fn calculate_total(&self) -> Option<f64> {
+        let items = self
+                   .sale_products
+                   .iter()
+                   .map(|new_sale_product| new_sale_product.to_item_calc_method())
+                   .collect::<Vec<ItemCalcMethod>>();
+        let calc_method = CalcMethods::new(items);
+        Some(calc_method.calculate_total())
     }
 }
 
