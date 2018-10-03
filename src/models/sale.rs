@@ -18,6 +18,9 @@ type BoxedQuery<'a> =
                                                      sql_types::Date,
                                                      sql_types::Nullable<sql_types::Double>,
                                                      sql_types::Nullable<sql_types::Double>,
+                                                     sql_types::Nullable<sql_types::Double>,
+                                                     sql_types::Nullable<sql_types::Double>,
+                                                     sql_types::Nullable<sql_types::Double>,
                                                      sql_types::Nullable<sql_types::Text>),
                                                      schema::sales::table, diesel::pg::Pg>;
 
@@ -27,6 +30,9 @@ pub struct Sale {
     pub client_id: i32,
     pub sale_date: NaiveDateForm,
     pub sub_total: Option<f64>,
+    pub sub_total_without_discount: Option<f64>,
+    pub discount_calculated: Option<f64>,
+    pub taxes_calculated: Option<f64>,
     pub total: Option<f64>,
     pub observation: Option<String>
 }
@@ -37,6 +43,9 @@ pub struct NewSale {
     pub client_id: i32,
     pub sale_date: NaiveDateForm,
     pub sub_total: Option<f64>,
+    pub sub_total_without_discount: Option<f64>,
+    pub discount_calculated: Option<f64>,
+    pub taxes_calculated: Option<f64>,
     pub total: Option<f64>,
     pub observation: Option<String>
 }
@@ -59,6 +68,9 @@ pub struct SearchSale {
     pub client_id: Option<i32>,
     pub sale_date: Option<NaiveDateForm>,
     pub sub_total: Option<f64>,
+    pub sub_total_without_discount: Option<f64>,
+    pub discount_calculated: Option<f64>,
+    pub taxes_calculated: Option<f64>,
     pub total: Option<f64>,
     pub observation: Option<String>
 }
@@ -119,6 +131,9 @@ impl Sale {
                   sale_date.eq(&full_sale.sale.sale_date),
                   observation.eq(&full_sale.sale.observation),
                   sub_total.eq(full_sale.calculate_sub_total()),
+                  sub_total_without_discount.eq(full_sale.subtotal_without_discount()),
+                  discount_calculated.eq(full_sale.calculate_discount()),
+                  taxes_calculated.eq(full_sale.calculate_taxes()),
                   total.eq(full_sale.calculate_total())))
             .get_result::<Sale>(&connection);
 
@@ -161,22 +176,41 @@ impl Sale {
 
 impl FullNewSale {
     pub fn calculate_sub_total(&self) -> Option<f64> {
-        let items = self
-                   .sale_products
-                   .iter()
-                   .map(|new_sale_product| new_sale_product.to_item_calc_method())
-                   .collect::<Vec<ItemCalcMethod>>();
+        let items = self.get_items();
         let calc_method = CalcMethods::new(items);
         Some(calc_method.subtotal())
     }
+
     pub fn calculate_total(&self) -> Option<f64> {
-        let items = self
-                   .sale_products
-                   .iter()
-                   .map(|new_sale_product| new_sale_product.to_item_calc_method())
-                   .collect::<Vec<ItemCalcMethod>>();
+        let items = self.get_items();
         let calc_method = CalcMethods::new(items);
         Some(calc_method.calculate_total())
+    }
+
+    pub fn subtotal_without_discount(&self) -> Option<f64> {
+        let items = self.get_items();
+        let calc_method = CalcMethods::new(items);
+        Some(calc_method.subtotal_without_discount())
+    }
+
+    pub fn calculate_discount(&self) -> Option<f64> {
+        let items = self.get_items();
+        let calc_method = CalcMethods::new(items);
+        Some(calc_method.calculate_discount())
+    }
+
+    pub fn calculate_taxes(&self) -> Option<f64> {
+        let items = self.get_items();
+        let calc_method = CalcMethods::new(items);
+        Some(calc_method.calculate_taxes())
+    }
+
+    fn get_items(&self) -> Vec<ItemCalcMethod> {
+         self
+        .sale_products
+        .iter()
+        .map(|new_sale_product| new_sale_product.to_item_calc_method())
+        .collect::<Vec<ItemCalcMethod>>()
     }
 }
 

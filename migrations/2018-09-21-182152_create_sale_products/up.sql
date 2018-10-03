@@ -8,5 +8,10 @@ CREATE TABLE sale_products(
     amount FLOAT,
     price INTEGER,
     discount INTEGER,
-    subtotal FLOAT
+    subtotal FLOAT,
+    sub_total_without_discount FLOAT,
+    discount_calculated FLOAT,
+    taxes_calculated FLOAT,
+    total FLOAT,
+    observation TEXT
 );
