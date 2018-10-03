@@ -62,6 +62,11 @@ table! {
         price -> Nullable<Int4>,
         discount -> Nullable<Int4>,
         subtotal -> Nullable<Float8>,
+        sub_total_without_discount -> Nullable<Float8>,
+        discount_calculated -> Nullable<Float8>,
+        taxes_calculated -> Nullable<Float8>,
+        total -> Nullable<Float8>,
+        observation -> Nullable<Text>,
     }
 }
 
@@ -71,6 +76,9 @@ table! {
         client_id -> Int4,
         sale_date -> Date,
         sub_total -> Nullable<Float8>,
+        sub_total_without_discount -> Nullable<Float8>,
+        discount_calculated -> Nullable<Float8>,
+        taxes_calculated -> Nullable<Float8>,
         total -> Nullable<Float8>,
         observation -> Nullable<Text>,
     }

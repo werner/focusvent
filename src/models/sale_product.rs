@@ -18,7 +18,12 @@ pub struct SaleProduct {
     pub amount: Option<f64>,
     pub price: Option<i32>,
     pub discount: Option<i32>,
-    pub subtotal: Option<f64>
+    pub subtotal: Option<f64>,
+    pub sub_total_without_discount: Option<f64>,
+    pub discount_calculated: Option<f64>,
+    pub taxes_calculated: Option<f64>,
+    pub total: Option<f64>,
+    pub observation: Option<String>,
 }
 
 #[derive(Insertable, Serialize, Deserialize, Clone, Debug, FromForm)]
@@ -30,7 +35,12 @@ pub struct NewSaleProduct {
     pub amount: Option<f64>,
     pub price: Option<i32>,
     pub discount: Option<i32>,
-    pub subtotal: Option<f64>
+    pub subtotal: Option<f64>,
+    pub sub_total_without_discount: Option<f64>,
+    pub discount_calculated: Option<f64>,
+    pub taxes_calculated: Option<f64>,
+    pub total: Option<f64>,
+    pub observation: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, FromForm)]
@@ -42,7 +52,12 @@ pub struct SearchSaleProduct {
     pub amount: Option<f64>,
     pub price: Option<i32>,
     pub discount: Option<i32>,
-    pub subtotal: Option<f64>
+    pub subtotal: Option<f64>,
+    pub sub_total_without_discount: Option<f64>,
+    pub discount_calculated: Option<f64>,
+    pub taxes_calculated: Option<f64>,
+    pub total: Option<f64>,
+    pub observation: Option<String>,
 }
 
 impl SaleProduct {
@@ -64,7 +79,11 @@ impl SaleProduct {
                           dsl::amount.eq(new_sale_product.amount),
                           dsl::price.eq(new_sale_product.price),
                           dsl::discount.eq(new_sale_product.discount),
-                          dsl::subtotal.eq(new_sale_product.calculate_total())))
+                          dsl::subtotal.eq(new_sale_product.calculate_sub_total()),
+                          dsl::sub_total_without_discount.eq(new_sale_product.subtotal_without_discount()),
+                          dsl::discount_calculated.eq(new_sale_product.calculate_discount()),
+                          dsl::taxes_calculated.eq(new_sale_product.calculate_taxes()),
+                          dsl::total.eq(new_sale_product.calculate_total())))
                     .get_result::<SaleProduct>(&connection)?;
             } else {
                 diesel::insert_into(sale_products::table)
@@ -86,6 +105,27 @@ impl NewSaleProduct {
         let item_calc = self.to_item_calc_method();
         Some(item_calc.calculate_total())
     }
+
+    pub fn calculate_sub_total(&self) -> Option<f64> {
+        let item_calc = self.to_item_calc_method();
+        Some(item_calc.subtotal())
+    }
+
+    pub fn subtotal_without_discount(&self) -> Option<f64> {
+        let item_calc = self.to_item_calc_method();
+        Some(item_calc.subtotal_without_discount())
+    }
+
+    pub fn calculate_discount(&self) -> Option<f64> {
+        let item_calc = self.to_item_calc_method();
+        Some(item_calc.calculate_discount())
+    }
+
+    pub fn calculate_taxes(&self) -> Option<f64> {
+        let item_calc = self.to_item_calc_method();
+        Some(item_calc.calculate_taxes())
+    }
+
 }
 
 from_data!(SaleProduct);
