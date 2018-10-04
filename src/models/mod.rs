@@ -12,6 +12,7 @@ pub mod naive_date_form;
 pub mod item_calculation;
 pub mod calculation;
 pub mod db_connection;
+pub mod money;
 
 #[macro_use]
 pub mod basic_model_actions;
