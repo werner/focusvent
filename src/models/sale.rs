@@ -6,8 +6,8 @@ use models::db_connection::*;
 use models::naive_date_form::NaiveDateForm;
 use models::sale_product::SaleProduct;
 use models::sale_product::NewSaleProduct;
-use models::calc_methods::CalcMethods;
-use models::item_calc_methods::ItemCalcMethod;
+use models::calculation::Calculation;
+use models::item_calculation::ItemCalculation;
 use schema;
 use schema::sales;
 use handlers::base::Search;
@@ -177,40 +177,40 @@ impl Sale {
 impl FullNewSale {
     pub fn calculate_sub_total(&self) -> Option<f64> {
         let items = self.get_items();
-        let calc_method = CalcMethods::new(items);
-        Some(calc_method.subtotal())
+        let calculation = Calculation::new(items);
+        Some(calculation.subtotal())
     }
 
     pub fn calculate_total(&self) -> Option<f64> {
         let items = self.get_items();
-        let calc_method = CalcMethods::new(items);
-        Some(calc_method.calculate_total())
+        let calculation = Calculation::new(items);
+        Some(calculation.calculate_total())
     }
 
     pub fn subtotal_without_discount(&self) -> Option<f64> {
         let items = self.get_items();
-        let calc_method = CalcMethods::new(items);
-        Some(calc_method.subtotal_without_discount())
+        let calculation = Calculation::new(items);
+        Some(calculation.subtotal_without_discount())
     }
 
     pub fn calculate_discount(&self) -> Option<f64> {
         let items = self.get_items();
-        let calc_method = CalcMethods::new(items);
-        Some(calc_method.calculate_discount())
+        let calculation = Calculation::new(items);
+        Some(calculation.calculate_discount())
     }
 
     pub fn calculate_taxes(&self) -> Option<f64> {
         let items = self.get_items();
-        let calc_method = CalcMethods::new(items);
-        Some(calc_method.calculate_taxes())
+        let calculation = Calculation::new(items);
+        Some(calculation.calculate_taxes())
     }
 
-    fn get_items(&self) -> Vec<ItemCalcMethod> {
+    fn get_items(&self) -> Vec<ItemCalculation> {
          self
         .sale_products
         .iter()
         .map(|new_sale_product| new_sale_product.to_item_calc_method())
-        .collect::<Vec<ItemCalcMethod>>()
+        .collect::<Vec<ItemCalculation>>()
     }
 }
 

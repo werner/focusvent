@@ -6,7 +6,7 @@ use diesel::ExpressionMethods;
 use diesel::BoolExpressionMethods;
 use schema::sale_products;
 use models::db_connection::*;
-use models::item_calc_methods::ItemCalcMethod;
+use models::item_calculation::ItemCalculation;
 
 #[derive(AsChangeset, Insertable, Serialize, Deserialize, Clone,
          Queryable, Debug, FromForm)]
@@ -97,8 +97,8 @@ impl SaleProduct {
 }
 
 impl NewSaleProduct {
-    pub fn to_item_calc_method(&self) -> ItemCalcMethod {
-        ItemCalcMethod::new(self.tax, self.discount, self.price, self.amount)
+    pub fn to_item_calc_method(&self) -> ItemCalculation {
+        ItemCalculation::new(self.tax, self.discount, self.price, self.amount)
     }
 
     pub fn calculate_total(&self) -> Option<f64> {

@@ -1,14 +1,14 @@
-use models::item_calc_methods::ItemCalcMethod;
+use models::item_calculation::ItemCalculation;
 
-pub struct CalcMethods {
-    items: Vec<ItemCalcMethod>
+pub struct Calculation {
+    items: Vec<ItemCalculation>
 }
 
-impl CalcMethods {
+impl Calculation {
     pub fn new(
-        items: Vec<ItemCalcMethod>
+        items: Vec<ItemCalculation>
     ) -> Self {
-        CalcMethods { items }
+        Calculation { items }
     }
 
     pub fn subtotal(&self) -> f64 {
