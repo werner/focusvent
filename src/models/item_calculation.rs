@@ -1,18 +1,18 @@
-pub struct ItemCalcMethod {
+pub struct ItemCalculation {
     tax: i32,
     discount: i32,
     price: i32,
     amount: f64,
 }
 
-impl ItemCalcMethod {
+impl ItemCalculation {
     pub fn new(
         tax: Option<i32>,
         discount: Option<i32>,
         price: Option<i32>,
         amount: Option<f64>,
     ) -> Self {
-        ItemCalcMethod {
+        ItemCalculation {
             tax: tax.unwrap_or(0),
             discount: discount.unwrap_or(0),
             price: price.unwrap_or(0),
