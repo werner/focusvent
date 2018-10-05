@@ -1,9 +1,9 @@
 use std::{ fmt, str };
 use std::num::ParseFloatError;
 use serde::de::{self, Deserialize, Deserializer, Visitor, SeqAccess, Unexpected};
+use serde::ser::{Serialize, Serializer, SerializeStruct};
 use models::currency::Currency;
 
-#[allow(dead_code)]
 pub struct Money {
     value: i32,
     currency: Currency
@@ -17,7 +17,13 @@ impl Money {
     fn to_i32(currency: &Currency, value: &str) -> Result<i32, ParseFloatError> {
         let replaced_value = value.replace(&currency.decimal_point, ".");
         let float_value = replaced_value.parse::<f64>()?;
-        Ok((float_value / 100.0).round() as i32)
+        Ok((float_value * 100.0).round() as i32)
+    }
+
+    fn to_f64_string(&self) -> String {
+        let float_value = (self.value  as f64) / 100.0;
+        let string_value = format!("{}", float_value);
+        string_value.replace(".", &self.currency.decimal_point)
     }
 }
 
@@ -98,5 +104,18 @@ impl<'de> Deserialize<'de> for Money {
 
         const FIELDS: &'static [&'static str] = &["value", "currency"];
         deserializer.deserialize_struct("Money", FIELDS, MoneyVisitor)
+    }
+}
+
+impl Serialize for Money {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut state = serializer.serialize_struct("Money", 2)?;
+
+        state.serialize_field("value", &self.to_f64_string())?;
+        state.serialize_field("currency", &self.currency)?;
+        state.end()
     }
 }
