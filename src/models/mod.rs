@@ -13,6 +13,7 @@ pub mod item_calculation;
 pub mod calculation;
 pub mod db_connection;
 pub mod money;
+pub mod currency;
 
 #[macro_use]
 pub mod basic_model_actions;

@@ -17,6 +17,15 @@ table! {
 }
 
 table! {
+    currencies (id) {
+        id -> Int4,
+        value -> Varchar,
+        decimal_point -> Varchar,
+        default_currency -> Bool,
+    }
+}
+
+table! {
     prices (id) {
         id -> Int4,
         name -> Varchar,
@@ -115,6 +124,7 @@ joinable!(sales -> clients (client_id));
 allow_tables_to_appear_in_same_query!(
     clients,
     costs,
+    currencies,
     prices,
     product_costs,
     product_prices,

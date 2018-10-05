@@ -1,16 +1,23 @@
-use std::fmt;
-use serde::de::{self, Deserialize, Deserializer, Visitor, SeqAccess};
+use std::{ fmt, str };
+use std::num::ParseFloatError;
+use serde::de::{self, Deserialize, Deserializer, Visitor, SeqAccess, Unexpected};
+use models::currency::Currency;
 
 #[allow(dead_code)]
 pub struct Money {
     value: i32,
-    currency: String,
-    decimal_point: String
+    currency: Currency
 }
 
 impl Money {
-    fn new(value: i32, currency: String, decimal_point: String) -> Self {
-        Money { value, currency, decimal_point }
+    fn new(value: i32, currency: Currency) -> Self {
+        Money { value, currency }
+    }
+
+    fn to_i32(currency: &Currency, value: &str) -> Result<i32, ParseFloatError> {
+        let replaced_value = value.replace(&currency.decimal_point, ".");
+        let float_value = replaced_value.parse::<f64>()?;
+        Ok((float_value / 100.0).round() as i32)
     }
 }
 
@@ -19,7 +26,7 @@ impl<'de> Deserialize<'de> for Money {
     where
         D: Deserializer<'de>,
     {
-        enum Field { Value, Currency, DecimalPoint };
+        enum Field { Value, Currency };
 
         impl<'de> Deserialize<'de> for Field {
             fn deserialize<D>(deserializer: D) -> Result<Field, D::Error>
@@ -42,7 +49,6 @@ impl<'de> Deserialize<'de> for Money {
                         match value {
                             "value" => Ok(Field::Value),
                             "currency" => Ok(Field::Currency),
-                            "decimal_point" => Ok(Field::DecimalPoint),
                             _ => Err(de::Error::unknown_field(value, FIELDS)),
                         }
                     }
@@ -65,25 +71,32 @@ impl<'de> Deserialize<'de> for Money {
             where
                 V: SeqAccess<'de>,
             {
-                let value: String = seq.next_element()?
+                let value: &str = seq.next_element()?
                     .ok_or_else(|| de::Error::invalid_length(0, &self))?;
-                let currency: String = seq.next_element()?
+                let currency: Currency = seq.next_element()?
                     .ok_or_else(|| de::Error::invalid_length(1, &self))?;
-                let decimal_point: String = seq.next_element()?
-                    .ok_or_else(|| de::Error::invalid_length(1, &self))?;
-                let formatted_value: String = value
-                                                  .chars()
-                                                  .filter(|&c| !decimal_point.contains(c))
-                                                  .collect();
-                let parsed_value = formatted_value.parse::<i32>()
-                    .map_err(|_val| de::Error::unknown_variant(&value, &["value"]))?;
 
-                Ok(Money::new(parsed_value, currency, decimal_point))
+                let parsed_value = Money::to_i32(&currency, value)
+                    .map_err(|_val| de::Error::invalid_value(Unexpected::Str(value), &self))?;
+
+                Ok(Money::new(parsed_value, currency))
+            }
+
+            fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
+            where
+                E: de::Error,
+            {
+                let currency = Currency::get_default_currency();
+
+                let parsed_value = Money::to_i32(&currency, value)
+                    .map_err(|_val| de::Error::invalid_value(Unexpected::Str(value), &self))?;
+
+                Ok(Money::new(parsed_value, currency))
             }
 
         }
 
-        const FIELDS: &'static [&'static str] = &["value", "currency", "decimal_point"];
+        const FIELDS: &'static [&'static str] = &["value", "currency"];
         deserializer.deserialize_struct("Money", FIELDS, MoneyVisitor)
     }
 }
