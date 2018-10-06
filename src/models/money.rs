@@ -1,9 +1,19 @@
 use std::{ fmt, str };
+use std::ops::Deref;
 use std::num::ParseFloatError;
 use serde::de::{self, Deserialize, Deserializer, Visitor, SeqAccess, Unexpected};
 use serde::ser::{Serialize, Serializer, SerializeStruct};
+use diesel::expression::{ AppearsOnTable, Expression, NonAggregate };
+use diesel::query_builder::{ AstPass, QueryFragment };
+use diesel::result::QueryResult;
+use diesel::sql_types::Integer;
+use diesel::Queryable;
+use diesel::pg::Pg;
+use rocket::request::FromFormValue;
+use rocket::http::RawStr;
 use models::currency::Currency;
 
+#[derive(Clone, Debug)]
 pub struct Money {
     value: i32,
     currency: Currency
@@ -117,5 +127,48 @@ impl Serialize for Money {
         state.serialize_field("value", &self.to_f64_string())?;
         state.serialize_field("currency", &self.currency)?;
         state.end()
+    }
+}
+
+impl Expression for Money {
+    type SqlType = Integer;
+}
+
+impl<QS> AppearsOnTable<QS> for Money {}
+
+impl<'v> FromFormValue<'v> for Money {
+    type Error = &'v RawStr;
+
+    fn from_form_value(form_value: &'v RawStr) -> Result<Money, &'v RawStr> {
+        match form_value.parse() {
+            Ok(money) => Ok(money),
+            _ => Err(form_value),
+        }
+    }
+}
+
+impl Deref for Money{
+    type Target = i32;
+
+    fn deref(&self)-> &i32 {
+        &self.value
+    }
+}
+
+impl Queryable<Integer, Pg> for Money {
+    type Row = i32;
+
+    fn build(row: Self::Row) -> Self {
+        Money {
+            value: row,
+            currency: Currency::get_default_currency()
+        }
+    }
+}
+
+impl QueryFragment<Pg> for Money {
+    fn walk_ast(&self, mut out: AstPass<Pg>) -> QueryResult<()> {
+        out.push_sql(" INTEGER");
+        Ok(())
     }
 }

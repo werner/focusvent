@@ -8,6 +8,7 @@ use models::sale_product::SaleProduct;
 use models::sale_product::NewSaleProduct;
 use models::calculation::Calculation;
 use models::item_calculation::ItemCalculation;
+use models::money::Money;
 use schema;
 use schema::sales;
 use handlers::base::Search;
@@ -16,11 +17,11 @@ type BoxedQuery<'a> =
     diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer,
                                                      sql_types::Integer,
                                                      sql_types::Date,
-                                                     sql_types::Nullable<sql_types::Double>,
-                                                     sql_types::Nullable<sql_types::Double>,
-                                                     sql_types::Nullable<sql_types::Double>,
-                                                     sql_types::Nullable<sql_types::Double>,
-                                                     sql_types::Nullable<sql_types::Double>,
+                                                     sql_types::Integer,
+                                                     sql_types::Integer,
+                                                     sql_types::Integer,
+                                                     sql_types::Integer,
+                                                     sql_types::Integer,
                                                      sql_types::Nullable<sql_types::Text>),
                                                      schema::sales::table, diesel::pg::Pg>;
 
@@ -29,11 +30,11 @@ pub struct Sale {
     pub id: i32,
     pub client_id: i32,
     pub sale_date: NaiveDateForm,
-    pub sub_total: Option<f64>,
-    pub sub_total_without_discount: Option<f64>,
-    pub discount_calculated: Option<f64>,
-    pub taxes_calculated: Option<f64>,
-    pub total: Option<f64>,
+    pub sub_total: Money,
+    pub sub_total_without_discount: Money,
+    pub discount_calculated: Money,
+    pub taxes_calculated: Money,
+    pub total: Money,
     pub observation: Option<String>
 }
 
@@ -42,11 +43,11 @@ pub struct Sale {
 pub struct NewSale {
     pub client_id: i32,
     pub sale_date: NaiveDateForm,
-    pub sub_total: Option<f64>,
-    pub sub_total_without_discount: Option<f64>,
-    pub discount_calculated: Option<f64>,
-    pub taxes_calculated: Option<f64>,
-    pub total: Option<f64>,
+    pub sub_total: Money,
+    pub sub_total_without_discount: Money,
+    pub discount_calculated: Money,
+    pub taxes_calculated: Money,
+    pub total: Money,
     pub observation: Option<String>
 }
 
@@ -67,11 +68,11 @@ pub struct SearchSale {
     pub id: Option<i32>,
     pub client_id: Option<i32>,
     pub sale_date: Option<NaiveDateForm>,
-    pub sub_total: Option<f64>,
-    pub sub_total_without_discount: Option<f64>,
-    pub discount_calculated: Option<f64>,
-    pub taxes_calculated: Option<f64>,
-    pub total: Option<f64>,
+    pub sub_total: Option<Money>,
+    pub sub_total_without_discount: Option<Money>,
+    pub discount_calculated: Option<Money>,
+    pub taxes_calculated: Option<Money>,
+    pub total: Option<Money>,
     pub observation: Option<String>
 }
 
@@ -175,34 +176,34 @@ impl Sale {
 }
 
 impl FullNewSale {
-    pub fn calculate_sub_total(&self) -> Option<f64> {
+    pub fn calculate_sub_total(&self) -> Money {
         let items = self.get_items();
         let calculation = Calculation::new(items);
-        Some(calculation.subtotal())
+        calculation.subtotal()
     }
 
-    pub fn calculate_total(&self) -> Option<f64> {
+    pub fn calculate_total(&self) -> Money {
         let items = self.get_items();
         let calculation = Calculation::new(items);
-        Some(calculation.calculate_total())
+        calculation.calculate_total()
     }
 
-    pub fn subtotal_without_discount(&self) -> Option<f64> {
+    pub fn subtotal_without_discount(&self) -> Money {
         let items = self.get_items();
         let calculation = Calculation::new(items);
-        Some(calculation.subtotal_without_discount())
+        calculation.subtotal_without_discount()
     }
 
-    pub fn calculate_discount(&self) -> Option<f64> {
+    pub fn calculate_discount(&self) -> Money {
         let items = self.get_items();
         let calculation = Calculation::new(items);
-        Some(calculation.calculate_discount())
+        calculation.calculate_discount()
     }
 
-    pub fn calculate_taxes(&self) -> Option<f64> {
+    pub fn calculate_taxes(&self) -> Money {
         let items = self.get_items();
         let calculation = Calculation::new(items);
-        Some(calculation.calculate_taxes())
+        calculation.calculate_taxes()
     }
 
     fn get_items(&self) -> Vec<ItemCalculation> {

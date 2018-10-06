@@ -2,6 +2,7 @@ use basic_model_actions;
 use diesel;
 use diesel::prelude::*;
 use diesel::sql_types;
+use diesel::deserialize::FromSql;
 use handlers::base::Search;
 use models::db_connection;
 use schema;
@@ -20,7 +21,7 @@ type BoxedQuery<'a> = diesel::query_builder::BoxedSelectStatement<
     diesel::pg::Pg,
 >;
 
-#[derive(Serialize, Deserialize, Clone, Queryable, Debug, AsChangeset, FromForm)]
+#[derive(Serialize, Deserialize, Clone, Debug, AsChangeset, FromSqlRow, FromForm)]
 #[table_name = "currencies"]
 pub struct Currency {
     pub id: i32,
