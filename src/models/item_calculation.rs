@@ -1,42 +1,45 @@
+use models::money::Money;
+
+#[derive(Clone, Debug)]
 pub struct ItemCalculation {
-    tax: i32,
-    discount: i32,
-    price: i32,
+    tax: Money,
+    discount: Money,
+    price: Money,
     amount: f64,
 }
 
 impl ItemCalculation {
     pub fn new(
-        tax: Option<i32>,
-        discount: Option<i32>,
-        price: Option<i32>,
-        amount: Option<f64>,
+        tax: &Money,
+        discount: &Money,
+        price: &Money,
+        amount: f64,
     ) -> Self {
         ItemCalculation {
-            tax: tax.unwrap_or(0),
-            discount: discount.unwrap_or(0),
-            price: price.unwrap_or(0),
-            amount: amount.unwrap_or(0.0),
+            tax: (*tax).clone(),
+            discount: (*discount).clone(),
+            price: (*price).clone(),
+            amount,
         }
     }
 
-    pub fn subtotal(&self) -> f64 {
-        self.price as f64 * self.amount
+    pub fn subtotal(&self) -> Money {
+        self.clone().price * self.amount
     }
 
-    pub fn subtotal_without_discount(&self) -> f64 {
+    pub fn subtotal_without_discount(&self) -> Money {
         self.subtotal() - self.calculate_discount()
     }
 
-    pub fn calculate_total(&self) -> f64 {
+    pub fn calculate_total(&self) -> Money {
         self.subtotal_without_discount() + self.calculate_taxes()
     }
 
-    pub fn calculate_discount(&self) -> f64 {
-        (self.discount as f64 * self.subtotal()) / 100.0
+    pub fn calculate_discount(&self) -> Money {
+        (self.clone().discount * self.subtotal()) / 100.0
     }
 
-    pub fn calculate_taxes(&self) -> f64 {
-        (self.subtotal_without_discount() * self.tax as f64) / 100.0
+    pub fn calculate_taxes(&self) -> Money {
+        (self.subtotal_without_discount() * self.clone().tax) / 100.0
     }
 }

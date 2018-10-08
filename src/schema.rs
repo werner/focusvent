@@ -17,6 +17,16 @@ table! {
 }
 
 table! {
+    currencies (id) {
+        id -> Int4,
+        value -> Varchar,
+        decimal_point -> Varchar,
+        default_currency -> Bool,
+        in_use -> Bool,
+    }
+}
+
+table! {
     prices (id) {
         id -> Int4,
         name -> Varchar,
@@ -57,15 +67,15 @@ table! {
         id -> Int4,
         sale_id -> Int4,
         product_id -> Int4,
-        tax -> Nullable<Int4>,
-        amount -> Nullable<Float8>,
-        price -> Nullable<Int4>,
-        discount -> Nullable<Int4>,
-        subtotal -> Nullable<Float8>,
-        sub_total_without_discount -> Nullable<Float8>,
-        discount_calculated -> Nullable<Float8>,
-        taxes_calculated -> Nullable<Float8>,
-        total -> Nullable<Float8>,
+        tax -> Int4,
+        amount -> Float8,
+        price -> Int4,
+        discount -> Int4,
+        subtotal -> Int4,
+        sub_total_without_discount -> Int4,
+        discount_calculated -> Int4,
+        taxes_calculated -> Int4,
+        total -> Int4,
         observation -> Nullable<Text>,
     }
 }
@@ -75,11 +85,11 @@ table! {
         id -> Int4,
         client_id -> Int4,
         sale_date -> Date,
-        sub_total -> Nullable<Float8>,
-        sub_total_without_discount -> Nullable<Float8>,
-        discount_calculated -> Nullable<Float8>,
-        taxes_calculated -> Nullable<Float8>,
-        total -> Nullable<Float8>,
+        sub_total -> Int4,
+        sub_total_without_discount -> Int4,
+        discount_calculated -> Int4,
+        taxes_calculated -> Int4,
+        total -> Int4,
         observation -> Nullable<Text>,
     }
 }
@@ -115,6 +125,7 @@ joinable!(sales -> clients (client_id));
 allow_tables_to_appear_in_same_query!(
     clients,
     costs,
+    currencies,
     prices,
     product_costs,
     product_prices,
