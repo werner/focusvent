@@ -15,6 +15,7 @@ type BoxedQuery<'a> = diesel::query_builder::BoxedSelectStatement<
         sql_types::Text,
         sql_types::Text,
         sql_types::Bool,
+        sql_types::Bool,
     ),
     schema::currencies::table,
     diesel::pg::Pg,
@@ -27,6 +28,7 @@ pub struct Currency {
     pub value: String,
     pub decimal_point: String,
     pub default_currency: bool,
+    pub in_use: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone, FromForm)]
@@ -35,6 +37,7 @@ pub struct SearchCurrency {
     value: Option<String>,
     decimal_point: Option<String>,
     default_currency: Option<bool>,
+    in_use: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Insertable, Eq, PartialEq, Hash, Debug)]
@@ -43,10 +46,26 @@ pub struct NewCurrency {
     value: String,
     decimal_point: String,
     default_currency: bool,
+    in_use: bool,
 }
 
 impl Currency {
-    pub fn get_default_currency() -> Self {
+    pub fn get_currency() -> Self {
+        use schema::currencies::dsl::*;
+        let connection = db_connection::establish_connection();
+
+        let maybe_currency = currencies
+            .filter(in_use.eq(true))
+            .get_result::<Currency>(&connection);
+
+        match maybe_currency {
+            Ok(currency) => currency,
+            Err(_) => Self::get_default_currency()
+        }
+
+    }
+
+    fn get_default_currency() -> Self {
         use schema::currencies::dsl::*;
         let connection = db_connection::establish_connection();
 
@@ -61,6 +80,7 @@ impl Currency {
                 value: "USD".to_string(),
                 decimal_point: ".".to_string(),
                 default_currency: true,
+                in_use: true
             },
         }
     }

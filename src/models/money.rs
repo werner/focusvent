@@ -55,7 +55,7 @@ impl<'de> Deserialize<'de> for Money {
             where
                 E: de::Error,
             {
-                let currency = Currency::get_default_currency();
+                let currency = Currency::get_currency();
 
                 let parsed_value = Money::to_i32(value, &currency)
                     .map_err(|_val| de::Error::invalid_value(Unexpected::Str(value), &self))?;
@@ -74,7 +74,7 @@ impl Serialize for Money {
     where
         S: Serializer,
     {
-        let currency = Currency::get_default_currency();
+        let currency = Currency::get_currency();
 
         serializer.serialize_str(&format!("{}", &self.to_f64_string(&currency)))
     }
