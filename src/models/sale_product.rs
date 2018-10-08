@@ -16,7 +16,7 @@ pub struct SaleProduct {
     pub sale_id: i32,
     pub product_id: i32,
     pub tax: Money,
-    pub amount: Option<f64>,
+    pub amount: f64,
     pub price: Money,
     pub discount: Money,
     pub subtotal: Money,
@@ -33,7 +33,7 @@ pub struct NewSaleProduct {
     pub sale_id: i32,
     pub product_id: i32,
     pub tax: Money,
-    pub amount: Option<f64>,
+    pub amount: f64,
     pub price: Money,
     pub discount: Money,
     pub subtotal: Money,
@@ -76,15 +76,15 @@ impl SaleProduct {
 
             if let Ok(edit_sale_product) = result_sale_product {
                 diesel::update(dsl::sale_products.find(edit_sale_product.id))
-                    .set((dsl::tax.eq(new_sale_product.tax),
-                          dsl::amount.eq(new_sale_product.amount),
-                          dsl::price.eq(new_sale_product.price),
-                          dsl::discount.eq(new_sale_product.discount),
-                          dsl::subtotal.eq(new_sale_product.calculate_sub_total()),
-                          dsl::sub_total_without_discount.eq(new_sale_product.subtotal_without_discount()),
-                          dsl::discount_calculated.eq(new_sale_product.calculate_discount()),
-                          dsl::taxes_calculated.eq(new_sale_product.calculate_taxes()),
-                          dsl::total.eq(new_sale_product.calculate_total())))
+                    .set((dsl::tax.eq(&new_sale_product.tax),
+                          dsl::amount.eq(&new_sale_product.amount),
+                          dsl::price.eq(&new_sale_product.price),
+                          dsl::discount.eq(&new_sale_product.discount),
+                          dsl::subtotal.eq(&new_sale_product.calculate_sub_total()),
+                          dsl::sub_total_without_discount.eq(&new_sale_product.subtotal_without_discount()),
+                          dsl::discount_calculated.eq(&new_sale_product.calculate_discount()),
+                          dsl::taxes_calculated.eq(&new_sale_product.calculate_taxes()),
+                          dsl::total.eq(&new_sale_product.calculate_total())))
                     .get_result::<SaleProduct>(&connection)?;
             } else {
                 diesel::insert_into(sale_products::table)
@@ -99,7 +99,7 @@ impl SaleProduct {
 
 impl NewSaleProduct {
     pub fn to_item_calc_method(&self) -> ItemCalculation {
-        ItemCalculation::new(self.tax, self.discount, self.price, self.amount)
+        ItemCalculation::new(&self.tax, &self.discount, &self.price, self.amount)
     }
 
     pub fn calculate_total(&self) -> Money {

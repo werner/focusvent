@@ -1,5 +1,6 @@
 use models::money::Money;
 
+#[derive(Clone, Debug)]
 pub struct ItemCalculation {
     tax: Money,
     discount: Money,
@@ -9,21 +10,21 @@ pub struct ItemCalculation {
 
 impl ItemCalculation {
     pub fn new(
-        tax: Money,
-        discount: Money,
-        price: Money,
-        amount: Option<f64>,
+        tax: &Money,
+        discount: &Money,
+        price: &Money,
+        amount: f64,
     ) -> Self {
         ItemCalculation {
-            tax,
-            discount,
-            price,
-            amount: amount.unwrap_or(0.0),
+            tax: (*tax).clone(),
+            discount: (*discount).clone(),
+            price: (*price).clone(),
+            amount,
         }
     }
 
     pub fn subtotal(&self) -> Money {
-        self.price * self.amount
+        self.clone().price * self.amount
     }
 
     pub fn subtotal_without_discount(&self) -> Money {
@@ -35,10 +36,10 @@ impl ItemCalculation {
     }
 
     pub fn calculate_discount(&self) -> Money {
-        (self.discount * self.subtotal()) / 100
+        (self.clone().discount * self.subtotal()) / 100.0
     }
 
     pub fn calculate_taxes(&self) -> Money {
-        (self.subtotal_without_discount() * self.tax) / 100
+        (self.subtotal_without_discount() * self.clone().tax) / 100.0
     }
 }

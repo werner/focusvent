@@ -67,7 +67,7 @@ table! {
         sale_id -> Int4,
         product_id -> Int4,
         tax -> Int4,
-        amount -> Nullable<Float8>,
+        amount -> Float8,
         price -> Int4,
         discount -> Int4,
         subtotal -> Int4,

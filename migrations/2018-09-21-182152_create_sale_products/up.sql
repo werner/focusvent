@@ -5,7 +5,7 @@ CREATE TABLE sale_products(
     sale_id INTEGER NOT NULL REFERENCES sales(id),
     product_id INTEGER NOT NULL REFERENCES products(id),
     tax INTEGER NOT NULL,
-    amount FLOAT,
+    amount FLOAT NOT NULL,
     price INTEGER NOT NULL,
     discount INTEGER NOT NULL,
     subtotal INTEGER NOT NULL,

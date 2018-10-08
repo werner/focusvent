@@ -1,9 +1,8 @@
 use std::{ fmt, str };
-use std::ops::Deref;
 use std::num::ParseFloatError;
-use serde::de::{self, Deserialize, Deserializer, Visitor, SeqAccess, Unexpected};
-use serde::ser::{Serialize, Serializer, SerializeStruct};
-use diesel::expression::{ AppearsOnTable, Expression, NonAggregate };
+use serde::de::{ self, Deserialize, Deserializer, Visitor, Unexpected };
+use serde::ser::{ Serialize, Serializer };
+use diesel::expression::{ AppearsOnTable, Expression };
 use diesel::query_builder::{ AstPass, QueryFragment };
 use diesel::result::QueryResult;
 use diesel::sql_types::Integer;
@@ -14,26 +13,27 @@ use rocket::http::RawStr;
 use models::currency::Currency;
 
 #[derive(Clone, Debug)]
-pub struct Money {
-    value: i32,
-    currency: Currency
-}
+pub struct Money(i32);
 
 impl Money {
-    fn new(value: i32, currency: Currency) -> Self {
-        Money { value, currency }
+    fn new(value: i32) -> Self {
+        Money(value)
     }
 
-    fn to_i32(currency: &Currency, value: &str) -> Result<i32, ParseFloatError> {
+    fn to_i32(value: &str, currency: &Currency) -> Result<i32, ParseFloatError> {
         let replaced_value = value.replace(&currency.decimal_point, ".");
         let float_value = replaced_value.parse::<f64>()?;
         Ok((float_value * 100.0).round() as i32)
     }
 
-    fn to_f64_string(&self) -> String {
-        let float_value = (self.value  as f64) / 100.0;
+    fn to_f64_string(&self, currency: &Currency) -> String {
+        let float_value = (self.0  as f64) / 100.0;
         let string_value = format!("{}", float_value);
-        string_value.replace(".", &self.currency.decimal_point)
+        string_value.replace(".", &currency.decimal_point)
+    }
+
+    fn from_f64(value: f64) -> Self {
+        Money((value * 100.0).round() as i32)
     }
 }
 
@@ -42,60 +42,13 @@ impl<'de> Deserialize<'de> for Money {
     where
         D: Deserializer<'de>,
     {
-        enum Field { Value, Currency };
-
-        impl<'de> Deserialize<'de> for Field {
-            fn deserialize<D>(deserializer: D) -> Result<Field, D::Error>
-            where
-                D: Deserializer<'de>,
-            {
-                struct FieldVisitor;
-
-                impl<'de> Visitor<'de> for FieldVisitor {
-                    type Value = Field;
-
-                    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                        formatter.write_str("`value` or `currency`")
-                    }
-
-                    fn visit_str<E>(self, value: &str) -> Result<Field, E>
-                    where
-                        E: de::Error,
-                    {
-                        match value {
-                            "value" => Ok(Field::Value),
-                            "currency" => Ok(Field::Currency),
-                            _ => Err(de::Error::unknown_field(value, FIELDS)),
-                        }
-                    }
-                }
-
-                deserializer.deserialize_identifier(FieldVisitor)
-            }
-        }
-
         struct MoneyVisitor;
 
         impl<'de> Visitor<'de> for MoneyVisitor {
             type Value = Money;
 
             fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-                formatter.write_str("struct Money")
-            }
-
-            fn visit_seq<V>(self, mut seq: V) -> Result<Money, V::Error>
-            where
-                V: SeqAccess<'de>,
-            {
-                let value: &str = seq.next_element()?
-                    .ok_or_else(|| de::Error::invalid_length(0, &self))?;
-                let currency: Currency = seq.next_element()?
-                    .ok_or_else(|| de::Error::invalid_length(1, &self))?;
-
-                let parsed_value = Money::to_i32(&currency, value)
-                    .map_err(|_val| de::Error::invalid_value(Unexpected::Str(value), &self))?;
-
-                Ok(Money::new(parsed_value, currency))
+                formatter.write_str("Money type")
             }
 
             fn visit_str<E>(self, value: &str) -> Result<Self::Value, E>
@@ -104,16 +57,15 @@ impl<'de> Deserialize<'de> for Money {
             {
                 let currency = Currency::get_default_currency();
 
-                let parsed_value = Money::to_i32(&currency, value)
+                let parsed_value = Money::to_i32(value, &currency)
                     .map_err(|_val| de::Error::invalid_value(Unexpected::Str(value), &self))?;
 
-                Ok(Money::new(parsed_value, currency))
+                Ok(Money::new(parsed_value))
             }
 
         }
 
-        const FIELDS: &'static [&'static str] = &["value", "currency"];
-        deserializer.deserialize_struct("Money", FIELDS, MoneyVisitor)
+        deserializer.deserialize_str(MoneyVisitor)
     }
 }
 
@@ -122,11 +74,9 @@ impl Serialize for Money {
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("Money", 2)?;
+        let currency = Currency::get_default_currency();
 
-        state.serialize_field("value", &self.to_f64_string())?;
-        state.serialize_field("currency", &self.currency)?;
-        state.end()
+        serializer.serialize_str(&format!("{}", &self.to_f64_string(&currency)))
     }
 }
 
@@ -140,18 +90,10 @@ impl<'v> FromFormValue<'v> for Money {
     type Error = &'v RawStr;
 
     fn from_form_value(form_value: &'v RawStr) -> Result<Money, &'v RawStr> {
-        match form_value.parse() {
+        match ::serde_json::from_str(form_value) {
             Ok(money) => Ok(money),
             _ => Err(form_value),
         }
-    }
-}
-
-impl Deref for Money{
-    type Target = i32;
-
-    fn deref(&self)-> &i32 {
-        &self.value
     }
 }
 
@@ -159,10 +101,7 @@ impl Queryable<Integer, Pg> for Money {
     type Row = i32;
 
     fn build(row: Self::Row) -> Self {
-        Money {
-            value: row,
-            currency: Currency::get_default_currency()
-        }
+        Money(row)
     }
 }
 
@@ -170,5 +109,75 @@ impl QueryFragment<Pg> for Money {
     fn walk_ast(&self, mut out: AstPass<Pg>) -> QueryResult<()> {
         out.push_sql(" INTEGER");
         Ok(())
+    }
+}
+
+/* Arithmetic Operations */
+use std::ops::Mul;
+use std::ops::Sub;
+use std::ops::Add;
+use std::ops::Div;
+use std::iter::Sum;
+
+impl Mul for Money {
+    type Output = Self;
+
+    fn mul(self, other: Self) -> Self {
+        Money(self.0 * other.0)
+    }
+}
+
+impl Mul<f64> for Money {
+    type Output = Self;
+
+    fn mul(self, other: f64) -> Self {
+        Self::from_f64(self.0 as f64 * other)
+    }
+}
+
+impl Sub for Money {
+    type Output = Self;
+
+    fn sub(self, other: Self) -> Self {
+        Money(self.0 * other.0)
+    }
+}
+
+impl Add for Money {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Money(self.0 + other.0)
+    }
+}
+
+impl<'a> Add<&'a Money> for Money {
+    type Output = Self;
+
+    fn add(self, other: &'a Self) -> Self {
+        Money(self.0 + other.0)
+    }
+}
+
+impl Div for Money {
+    type Output = Self;
+
+    fn div(self, other: Self) -> Self {
+        Money(self.0 / other.0)
+    }
+}
+
+impl Div<f64> for Money {
+    type Output = Self;
+
+    fn div(self, other: f64) -> Self {
+        let value = self.0 as f64 / 100.0;
+        Self::from_f64(value / other)
+    }
+}
+
+impl<'a> Sum<&'a Money> for Money {
+    fn sum<I: Iterator<Item=&'a Money>>(iter: I) -> Money {
+        iter.fold(Money(0), Add::add)
     }
 }
