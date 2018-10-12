@@ -22,7 +22,8 @@ type BoxedQuery<'a> =
                                                      sql_types::Integer,
                                                      sql_types::Integer,
                                                      sql_types::Integer,
-                                                     sql_types::Nullable<sql_types::Text>),
+                                                     sql_types::Nullable<sql_types::Text>,
+                                                     sql_types::Integer),
                                                      schema::sales::table, diesel::pg::Pg>;
 
 #[derive(AsChangeset, Insertable, Serialize, Deserialize, Clone, Queryable, Debug, FromForm)]
@@ -35,7 +36,8 @@ pub struct Sale {
     pub discount_calculated: Money,
     pub taxes_calculated: Money,
     pub total: Money,
-    pub observation: Option<String>
+    pub observation: Option<String>,
+    pub currency_id: i32
 }
 
 #[derive(Insertable, Serialize, Deserialize, Clone, Debug, FromForm)]
@@ -48,7 +50,8 @@ pub struct NewSale {
     pub discount_calculated: Money,
     pub taxes_calculated: Money,
     pub total: Money,
-    pub observation: Option<String>
+    pub observation: Option<String>,
+    pub currency_id: i32
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -73,7 +76,8 @@ pub struct SearchSale {
     pub discount_calculated: Option<Money>,
     pub taxes_calculated: Option<Money>,
     pub total: Option<Money>,
-    pub observation: Option<String>
+    pub observation: Option<String>,
+    pub currency_id: Option<i32>
 }
 
 impl Sale {
@@ -129,6 +133,7 @@ impl Sale {
 
         let sale = diesel::update(sales.find(param_id))
             .set((client_id.eq(full_sale.sale.client_id),
+                  currency_id.eq(full_sale.sale.currency_id),
                   sale_date.eq(&full_sale.sale.sale_date),
                   observation.eq(&full_sale.sale.observation),
                   sub_total.eq(full_sale.calculate_sub_total()),

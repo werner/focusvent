@@ -20,6 +20,7 @@ table! {
     currencies (id) {
         id -> Int4,
         value -> Varchar,
+        symbol -> Varchar,
         decimal_point -> Varchar,
         default_currency -> Bool,
         in_use -> Bool,
@@ -91,6 +92,7 @@ table! {
         taxes_calculated -> Int4,
         total -> Int4,
         observation -> Nullable<Text>,
+        currency_id -> Int4,
     }
 }
 
@@ -121,6 +123,7 @@ joinable!(product_prices -> products (product_id));
 joinable!(sale_products -> products (product_id));
 joinable!(sale_products -> sales (sale_id));
 joinable!(sales -> clients (client_id));
+joinable!(sales -> currencies (currency_id));
 
 allow_tables_to_appear_in_same_query!(
     clients,
