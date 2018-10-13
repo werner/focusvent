@@ -10,7 +10,6 @@ use diesel::Queryable;
 use diesel::pg::Pg;
 use rocket::request::FromFormValue;
 use rocket::http::RawStr;
-use models::currency::Currency;
 
 #[derive(Clone, Debug)]
 pub struct Money(i32);
@@ -20,16 +19,13 @@ impl Money {
         Money(value)
     }
 
-    fn to_i32(value: &str, currency: &Currency) -> Result<i32, ParseFloatError> {
-        let replaced_value = value.replace(&currency.decimal_point, ".");
-        let float_value = replaced_value.parse::<f64>()?;
+    fn to_i32(value: &str) -> Result<i32, ParseFloatError> {
+        let float_value = value.parse::<f64>()?;
         Ok((float_value * 100.0).round() as i32)
     }
 
-    fn to_f64_string(&self, currency: &Currency) -> String {
-        let float_value = (self.0  as f64) / 100.0;
-        let string_value = format!("{}", float_value);
-        string_value.replace(".", &currency.decimal_point)
+    fn to_f64(&self) -> f64 {
+        (self.0  as f64) / 100.0
     }
 
     fn from_f64(value: f64) -> Self {
@@ -55,9 +51,7 @@ impl<'de> Deserialize<'de> for Money {
             where
                 E: de::Error,
             {
-                let currency = Currency::get_currency();
-
-                let parsed_value = Money::to_i32(value, &currency)
+                let parsed_value = Money::to_i32(value)
                     .map_err(|_val| de::Error::invalid_value(Unexpected::Str(value), &self))?;
 
                 Ok(Money::new(parsed_value))
@@ -74,9 +68,7 @@ impl Serialize for Money {
     where
         S: Serializer,
     {
-        let currency = Currency::get_currency();
-
-        serializer.serialize_str(&format!("{}", &self.to_f64_string(&currency)))
+        serializer.serialize_str(&format!("{}", &self.to_f64()))
     }
 }
 
