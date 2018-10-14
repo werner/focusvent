@@ -45,11 +45,11 @@ pub struct Sale {
 pub struct NewSale {
     pub client_id: i32,
     pub sale_date: NaiveDateForm,
-    pub sub_total: Money,
-    pub sub_total_without_discount: Money,
-    pub discount_calculated: Money,
-    pub taxes_calculated: Money,
-    pub total: Money,
+    pub sub_total: Option<Money>,
+    pub sub_total_without_discount: Option<Money>,
+    pub discount_calculated: Option<Money>,
+    pub taxes_calculated: Option<Money>,
+    pub total: Option<Money>,
     pub observation: Option<String>,
     pub currency_id: i32
 }
@@ -117,7 +117,7 @@ impl Sale {
         let connection = establish_connection();
 
         let sale: Result<Sale, diesel::result::Error> = diesel::insert_into(sales::table)
-            .values(&full_new_sale.sale)
+            .values(&full_new_sale.sale_with_calculations())
             .get_result(&connection);
 
         if let Ok(db_sale) = &sale {
@@ -181,6 +181,16 @@ impl Sale {
 }
 
 impl FullNewSale {
+    pub fn sale_with_calculations(&self) -> NewSale {
+        let mut sale = self.sale.clone();
+        sale.sub_total = Some(self.calculate_sub_total());
+        sale.sub_total_without_discount = Some(self.subtotal_without_discount());
+        sale.discount_calculated = Some(self.calculate_discount());
+        sale.taxes_calculated = Some(self.calculate_taxes());
+        sale.total = Some(self.calculate_total());
+        sale
+    }
+
     pub fn calculate_sub_total(&self) -> Money {
         let items = self.get_items();
         let calculation = Calculation::new(items);
@@ -222,3 +232,25 @@ impl FullNewSale {
 
 from_data!(Sale);
 from_data!(NewSale);
+from_data!(FullNewSale);
+from_data!(FullSale);
+
+use std::str::FromStr;
+use serde_json;
+
+impl FromStr for Sale {
+    type Err = serde_json::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        serde_json::from_str(s)
+    }
+}
+
+impl FromStr for SearchSale {
+    type Err = serde_json::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        serde_json::from_str(s)
+    }
+}
+

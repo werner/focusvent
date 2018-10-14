@@ -22,6 +22,7 @@ table! {
         value -> Varchar,
         symbol -> Varchar,
         decimal_point -> Varchar,
+        thousands_separator -> Varchar,
         default_currency -> Bool,
         in_use -> Bool,
     }

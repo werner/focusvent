@@ -5,6 +5,7 @@ extern crate regex;
 
 mod product_tests;
 mod price_tests;
+mod sale_tests;
 
 #[cfg(test)]
 mod test {
@@ -13,6 +14,7 @@ mod test {
     use focusvent::models::db_connection::*;
     use product_tests;
     use price_tests;
+    use sale_tests;
 
     fn rocket() -> rocket::Rocket {
         rocket::ignite().mount("/", ::focusvent::routes::routes())
@@ -30,5 +32,6 @@ mod test {
         product_tests::update(&client, &connection);
         product_tests::update_price_and_cost(&client, &connection);
         product_tests::show(&client, &connection);
+        sale_tests::create_sale(&client);
     }
 }

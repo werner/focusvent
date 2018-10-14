@@ -15,6 +15,7 @@ type BoxedQuery<'a> = diesel::query_builder::BoxedSelectStatement<
         sql_types::Text,
         sql_types::Text,
         sql_types::Text,
+        sql_types::Text,
         sql_types::Bool,
         sql_types::Bool,
     ),
@@ -29,6 +30,7 @@ pub struct Currency {
     pub value: String,
     pub symbol: String,
     pub decimal_point: String,
+    pub thousands_separator: String,
     pub default_currency: bool,
     pub in_use: bool,
 }
@@ -39,6 +41,7 @@ pub struct SearchCurrency {
     value: Option<String>,
     symbol: Option<String>,
     decimal_point: Option<String>,
+    thousands_separator: Option<String>,
     default_currency: Option<bool>,
     in_use: Option<bool>,
 }
@@ -49,6 +52,7 @@ pub struct NewCurrency {
     value: String,
     symbol: String,
     decimal_point: String,
+    thousands_separator: String,
     default_currency: bool,
     in_use: bool,
 }
@@ -84,6 +88,7 @@ impl Currency {
                 value: "USD".to_string(),
                 symbol: "$".to_string(),
                 decimal_point: ".".to_string(),
+                thousands_separator: ",".to_string(),
                 default_currency: true,
                 in_use: true
             },

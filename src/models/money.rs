@@ -2,15 +2,10 @@ use std::{ fmt, str };
 use std::num::ParseFloatError;
 use serde::de::{ self, Deserialize, Deserializer, Visitor, Unexpected };
 use serde::ser::{ Serialize, Serializer };
-use diesel::expression::{ AppearsOnTable, Expression };
-use diesel::query_builder::{ AstPass, QueryFragment };
-use diesel::result::QueryResult;
-use diesel::sql_types::Integer;
-use diesel::Queryable;
-use diesel::pg::Pg;
 use rocket::request::FromFormValue;
 use rocket::http::RawStr;
 
+#[derive(DieselNewType)]
 #[derive(Clone, Debug)]
 pub struct Money(i32);
 
@@ -72,12 +67,6 @@ impl Serialize for Money {
     }
 }
 
-impl Expression for Money {
-    type SqlType = Integer;
-}
-
-impl<QS> AppearsOnTable<QS> for Money {}
-
 impl<'v> FromFormValue<'v> for Money {
     type Error = &'v RawStr;
 
@@ -86,21 +75,6 @@ impl<'v> FromFormValue<'v> for Money {
             Ok(money) => Ok(money),
             _ => Err(form_value),
         }
-    }
-}
-
-impl Queryable<Integer, Pg> for Money {
-    type Row = i32;
-
-    fn build(row: Self::Row) -> Self {
-        Money(row)
-    }
-}
-
-impl QueryFragment<Pg> for Money {
-    fn walk_ast(&self, mut out: AstPass<Pg>) -> QueryResult<()> {
-        out.push_sql(" INTEGER");
-        Ok(())
     }
 }
 
