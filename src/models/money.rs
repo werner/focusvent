@@ -19,16 +19,16 @@ impl Money {
         Ok(float_value.round() as i32)
     }
 
-    fn to_i32_from_f64(value: f64) -> Result<i32, ParseFloatError> {
-        Ok(value.round() as i32)
+    fn to_i32_from_f64(value: f64) -> i32 {
+        value.round() as i32
     }
 
     fn to_f64(&self) -> f64 {
-        (self.0  as f64) / 100.0
+        self.0  as f64
     }
 
     fn from_f64(value: f64) -> Self {
-        Money((value * 100.0).round() as i32)
+        Money(Self::to_i32_from_f64(value))
     }
 }
 
@@ -109,7 +109,7 @@ impl Sub for Money {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
-        Money(self.0 * other.0)
+        Money(self.0 - other.0)
     }
 }
 
@@ -141,7 +141,7 @@ impl Div<f64> for Money {
     type Output = Self;
 
     fn div(self, other: f64) -> Self {
-        let value = self.0 as f64 / 100.0;
+        let value = self.0 as f64;
         Self::from_f64(value / other)
     }
 }
