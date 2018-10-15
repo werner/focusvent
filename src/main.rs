@@ -15,6 +15,8 @@ extern crate serde_json;
 extern crate diesel;
 extern crate dotenv;
 extern crate chrono;
+#[macro_use]
+extern crate diesel_derive_newtype;
 
 mod schema;
 mod handlers;

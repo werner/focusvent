@@ -5,6 +5,7 @@ CREATE TABLE currencies(
     value VARCHAR NOT NULL,
     symbol VARCHAR NOT NULL,
     decimal_point VARCHAR NOT NULL,
+    thousands_separator VARCHAR NOT NULL,
     default_currency BOOLEAN NOT NULL DEFAULT false,
     in_use BOOLEAN NOT NULL DEFAULT false
 );

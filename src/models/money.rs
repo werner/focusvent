@@ -2,34 +2,33 @@ use std::{ fmt, str };
 use std::num::ParseFloatError;
 use serde::de::{ self, Deserialize, Deserializer, Visitor, Unexpected };
 use serde::ser::{ Serialize, Serializer };
-use diesel::expression::{ AppearsOnTable, Expression };
-use diesel::query_builder::{ AstPass, QueryFragment };
-use diesel::result::QueryResult;
-use diesel::sql_types::Integer;
-use diesel::Queryable;
-use diesel::pg::Pg;
 use rocket::request::FromFormValue;
 use rocket::http::RawStr;
 
-#[derive(Clone, Debug)]
-pub struct Money(i32);
+#[derive(DieselNewType)]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Money(pub i32);
 
 impl Money {
     fn new(value: i32) -> Self {
         Money(value)
     }
 
-    fn to_i32(value: &str) -> Result<i32, ParseFloatError> {
+    fn to_i32_from_str(value: &str) -> Result<i32, ParseFloatError> {
         let float_value = value.parse::<f64>()?;
-        Ok((float_value * 100.0).round() as i32)
+        Ok(float_value.round() as i32)
+    }
+
+    fn to_i32_from_f64(value: f64) -> i32 {
+        value.round() as i32
     }
 
     fn to_f64(&self) -> f64 {
-        (self.0  as f64) / 100.0
+        self.0  as f64
     }
 
     fn from_f64(value: f64) -> Self {
-        Money((value * 100.0).round() as i32)
+        Money(Self::to_i32_from_f64(value))
     }
 }
 
@@ -51,7 +50,7 @@ impl<'de> Deserialize<'de> for Money {
             where
                 E: de::Error,
             {
-                let parsed_value = Money::to_i32(value)
+                let parsed_value = Money::to_i32_from_str(value)
                     .map_err(|_val| de::Error::invalid_value(Unexpected::Str(value), &self))?;
 
                 Ok(Money::new(parsed_value))
@@ -72,12 +71,6 @@ impl Serialize for Money {
     }
 }
 
-impl Expression for Money {
-    type SqlType = Integer;
-}
-
-impl<QS> AppearsOnTable<QS> for Money {}
-
 impl<'v> FromFormValue<'v> for Money {
     type Error = &'v RawStr;
 
@@ -86,21 +79,6 @@ impl<'v> FromFormValue<'v> for Money {
             Ok(money) => Ok(money),
             _ => Err(form_value),
         }
-    }
-}
-
-impl Queryable<Integer, Pg> for Money {
-    type Row = i32;
-
-    fn build(row: Self::Row) -> Self {
-        Money(row)
-    }
-}
-
-impl QueryFragment<Pg> for Money {
-    fn walk_ast(&self, mut out: AstPass<Pg>) -> QueryResult<()> {
-        out.push_sql(" INTEGER");
-        Ok(())
     }
 }
 
@@ -131,7 +109,7 @@ impl Sub for Money {
     type Output = Self;
 
     fn sub(self, other: Self) -> Self {
-        Money(self.0 * other.0)
+        Money(self.0 - other.0)
     }
 }
 
@@ -163,7 +141,7 @@ impl Div<f64> for Money {
     type Output = Self;
 
     fn div(self, other: f64) -> Self {
-        let value = self.0 as f64 / 100.0;
+        let value = self.0 as f64;
         Self::from_f64(value / other)
     }
 }

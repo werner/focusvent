@@ -4,8 +4,6 @@ extern crate rocket;
 extern crate serde;
 extern crate serde_json;
 
-use diesel::RunQueryDsl;
-use diesel::pg::PgConnection;
 use rocket::http::ContentType;
 use rocket::http::Status;
 use rocket::local::Client;
@@ -14,7 +12,6 @@ use focusvent::models::product::Product;
 use focusvent::models::product::FullProduct;
 use focusvent::models::cost::Cost;
 use focusvent::models::supplier::Supplier;
-use focusvent::schema::products::dsl::*;
 
 fn create_price(client: &Client) -> Cost {
     let mut response = client
@@ -93,7 +90,7 @@ fn create_product(client: &Client) -> Product {
     serde_json::from_str(&response.body_string().unwrap()).unwrap()
 }
 
-fn create_product_with_price(client: &Client) -> Product {
+pub fn create_product_with_price(client: &Client) -> Product {
     let cost = create_cost(client);
     let cost2 = create_cost_2(client);
     let price = create_price(client);
@@ -134,9 +131,7 @@ fn create_product_with_price(client: &Client) -> Product {
     serde_json::from_str(&response.body_string().unwrap()).unwrap()
 }
 
-pub fn update(client: &Client, connection: &PgConnection) {
-    clear(connection);
-
+pub fn update(client: &Client) {
     let product = create_product(client);
     let response = client
         .put(format!("/products/{}", product.id))
@@ -157,9 +152,7 @@ pub fn update(client: &Client, connection: &PgConnection) {
                response.body_string());
 }
 
-pub fn update_price_and_cost(client: &Client, connection: &PgConnection) {
-    clear(connection);
-
+pub fn update_price_and_cost(client: &Client) {
     let product = create_product_with_price(client);
     let mut response = client.get(format!("/products/{}", product.id)).dispatch();
     let full_product: FullProduct =
@@ -225,9 +218,7 @@ pub fn update_price_and_cost(client: &Client, connection: &PgConnection) {
                response.body_string().unwrap());
 }
 
-pub fn index(client: &Client, connection: &PgConnection) {
-    clear(connection);
-
+pub fn index(client: &Client) {
     let product = create_product(client);
     let product2 = create_product_with_price(client);
     let mut response = client.get("/products?offset=0&limit=10").dispatch();
@@ -237,9 +228,7 @@ pub fn index(client: &Client, connection: &PgConnection) {
     assert_eq!(Some(string), response.body_string());
 }
 
-pub fn index_search(client: &Client, connection: &PgConnection) {
-    clear(connection);
-
+pub fn index_search(client: &Client) {
     let product = create_product(client);
     create_product_with_price(client);
     let mut response = client.get("/products?offset=0&limit=10&search={\"name\": \"Shoe\"}").dispatch();
@@ -249,9 +238,7 @@ pub fn index_search(client: &Client, connection: &PgConnection) {
     assert_eq!(Some(string), response.body_string());
 }
 
-pub fn show(client: &Client, connection: &PgConnection) {
-    clear(connection);
-
+pub fn show(client: &Client) {
     let product = create_product_with_price(client);
     let mut response = client.get(format!("/products/{}", product.id)).dispatch();
     assert_eq!(response.status(), Status::Ok);
@@ -263,18 +250,3 @@ pub fn show(client: &Client, connection: &PgConnection) {
     assert_eq!(2, full_product.costs.len());
 }
 
-fn clear(connection: &PgConnection) {
-    use focusvent::schema::prices::dsl::*;
-    use focusvent::schema::product_prices::dsl::*;
-
-    use focusvent::schema::product_costs::dsl::*;
-    use focusvent::schema::costs::dsl::*;
-    use focusvent::schema::suppliers::dsl::*;
-
-    diesel::delete(product_costs).execute(connection).unwrap();
-    diesel::delete(costs).execute(connection).unwrap();
-    diesel::delete(suppliers).execute(connection).unwrap();
-    diesel::delete(product_prices).execute(connection).unwrap();
-    diesel::delete(products).execute(connection).unwrap();
-    diesel::delete(prices).execute(connection).unwrap();
-}

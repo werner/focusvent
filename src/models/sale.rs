@@ -1,4 +1,5 @@
 use std::io::Read;
+use std::str::FromStr;
 use diesel;
 use diesel::sql_types;
 use diesel::prelude::*;
@@ -9,8 +10,15 @@ use models::sale_product::NewSaleProduct;
 use models::calculation::Calculation;
 use models::item_calculation::ItemCalculation;
 use models::money::Money;
+use models::client::Client;
+use models::client::BasicModelActions;
+use rocket::{ Request, Data };
+use rocket::data:: { FromData, Outcome };
+use rocket::http::Status;
+use rocket::Outcome::{ Failure, Success };
 use schema;
 use schema::sales;
+use serde_json;
 use handlers::base::Search;
 
 type BoxedQuery<'a> = 
@@ -27,6 +35,7 @@ type BoxedQuery<'a> =
                                                      schema::sales::table, diesel::pg::Pg>;
 
 #[derive(AsChangeset, Insertable, Serialize, Deserialize, Clone, Queryable, Debug, FromForm)]
+#[table_name="sales"]
 pub struct Sale {
     pub id: i32,
     pub client_id: i32,
@@ -45,19 +54,19 @@ pub struct Sale {
 pub struct NewSale {
     pub client_id: i32,
     pub sale_date: NaiveDateForm,
-    pub sub_total: Money,
-    pub sub_total_without_discount: Money,
-    pub discount_calculated: Money,
-    pub taxes_calculated: Money,
-    pub total: Money,
+    pub sub_total: Option<Money>,
+    pub sub_total_without_discount: Option<Money>,
+    pub discount_calculated: Option<Money>,
+    pub taxes_calculated: Option<Money>,
+    pub total: Option<Money>,
     pub observation: Option<String>,
     pub currency_id: i32
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct FullSale {
-    sale: Sale,
-    sale_products: Vec<SaleProduct>
+    pub sale: Sale,
+    pub sale_products: Vec<SaleProduct>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -112,12 +121,12 @@ impl Sale {
             sale_products: sale_products_result
         })
     }
-
+ 
     pub fn create(full_new_sale: FullNewSale) -> Result<Sale, diesel::result::Error> {
         let connection = establish_connection();
 
         let sale: Result<Sale, diesel::result::Error> = diesel::insert_into(sales::table)
-            .values(&full_new_sale.sale)
+            .values(&full_new_sale.sale_with_calculations())
             .get_result(&connection);
 
         if let Ok(db_sale) = &sale {
@@ -158,6 +167,10 @@ impl Sale {
             .execute(&connection)
     }
 
+    pub fn client(&self) -> Result<Client, diesel::result::Error> {
+        Client::show(self.client_id)
+    }
+
     fn searching_records<'a>(search: Option<Search<SearchSale>>) -> BoxedQuery<'a> {
         use schema::sales::dsl::*;
 
@@ -181,6 +194,16 @@ impl Sale {
 }
 
 impl FullNewSale {
+    pub fn sale_with_calculations(&self) -> NewSale {
+        let mut sale = self.sale.clone();
+        sale.sub_total = Some(self.calculate_sub_total());
+        sale.sub_total_without_discount = Some(self.subtotal_without_discount());
+        sale.discount_calculated = Some(self.calculate_discount());
+        sale.taxes_calculated = Some(self.calculate_taxes());
+        sale.total = Some(self.calculate_total());
+        sale
+    }
+
     pub fn calculate_sub_total(&self) -> Money {
         let items = self.get_items();
         let calculation = Calculation::new(items);
@@ -222,3 +245,48 @@ impl FullNewSale {
 
 from_data!(Sale);
 from_data!(NewSale);
+from_data!(FullSale);
+
+impl FromStr for Sale {
+    type Err = serde_json::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        serde_json::from_str(s)
+    }
+}
+
+impl FromStr for SearchSale {
+    type Err = serde_json::Error;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        serde_json::from_str(s)
+    }
+}
+
+impl FromData for FullNewSale {
+    type Error = String;
+
+    fn from_data( _: &Request, data: Data) -> Outcome<Self, String> {
+
+        let mut string_data = String::new();
+        if let Err(e) = data.open().read_to_string(&mut string_data) {
+            return Failure((Status::InternalServerError, format!("{:?}", e)));
+        }
+
+        let maybe_full_new_sale = serde_json::from_str(&string_data);
+
+        match maybe_full_new_sale {
+            Ok(ok_full_new_sale) => {
+                let full_new_sale: FullNewSale = ok_full_new_sale;
+                if full_new_sale.sale_products.is_empty() {
+                    return Failure(( Status::UnprocessableEntity, "No products selected!".to_string() ));
+                }
+                Success(full_new_sale)
+            },
+            Err(err) => {
+                println!("Error deserializing {:#?} {:?}", &string_data, err);
+                return Failure((Status::BadRequest, format!("Error deserializing {:?} {:?}", &string_data, err)))
+            }
+        }
+    }
+}

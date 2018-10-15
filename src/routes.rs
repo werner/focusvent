@@ -3,7 +3,9 @@ use handlers::prices;
 use handlers::costs;
 use handlers::suppliers;
 use handlers::clients;
+use handlers::currencies;
 use handlers::taxes;
+use handlers::sales;
 use rocket;
 
 pub fn routes() -> Vec<rocket::Route> {
@@ -18,6 +20,11 @@ pub fn routes() -> Vec<rocket::Route> {
             costs::create_route(),
             costs::update_route(),
             costs::delete_route(),
+            currencies::index_route(),
+            currencies::show_route(),
+            currencies::create_route(),
+            currencies::update_route(),
+            currencies::delete_route(),
             prices::index_route(),
             prices::show_route(),
             prices::create_route(),
@@ -35,11 +42,18 @@ pub fn routes() -> Vec<rocket::Route> {
             taxes::delete_route()];
 
     let mut automatic_routes =
-        routes![products::index,
-                products::show,
-                products::create,
-                products::update,
-                products::delete];
+        routes![
+            products::index,
+            products::show,
+            products::create,
+            products::update,
+            products::delete,
+            sales::index,
+            sales::show,
+            sales::create,
+            sales::update,
+            sales::delete,
+        ];
     
     manual_routes.append(&mut automatic_routes);
 
