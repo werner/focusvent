@@ -6,17 +6,21 @@ use rocket::request::FromFormValue;
 use rocket::http::RawStr;
 
 #[derive(DieselNewType)]
-#[derive(Clone, Debug)]
-pub struct Money(i32);
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Money(pub i32);
 
 impl Money {
     fn new(value: i32) -> Self {
         Money(value)
     }
 
-    fn to_i32(value: &str) -> Result<i32, ParseFloatError> {
+    fn to_i32_from_str(value: &str) -> Result<i32, ParseFloatError> {
         let float_value = value.parse::<f64>()?;
-        Ok((float_value * 100.0).round() as i32)
+        Ok(float_value.round() as i32)
+    }
+
+    fn to_i32_from_f64(value: f64) -> Result<i32, ParseFloatError> {
+        Ok(value.round() as i32)
     }
 
     fn to_f64(&self) -> f64 {
@@ -46,7 +50,7 @@ impl<'de> Deserialize<'de> for Money {
             where
                 E: de::Error,
             {
-                let parsed_value = Money::to_i32(value)
+                let parsed_value = Money::to_i32_from_str(value)
                     .map_err(|_val| de::Error::invalid_value(Unexpected::Str(value), &self))?;
 
                 Ok(Money::new(parsed_value))

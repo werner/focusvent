@@ -9,7 +9,7 @@ use models::money::Money;
 use models::db_connection::*;
 use models::item_calculation::ItemCalculation;
 
-#[derive(AsChangeset, Insertable, Serialize, Deserialize, Clone,
+#[derive(AsChangeset, Insertable, Serialize, Deserialize, Clone, PartialEq, Identifiable, Associations,
          Queryable, Debug, FromForm)]
 pub struct SaleProduct {
     pub id: i32,
@@ -30,17 +30,17 @@ pub struct SaleProduct {
 #[derive(Insertable, Serialize, Deserialize, Clone, Debug, FromForm)]
 #[table_name="sale_products"]
 pub struct NewSaleProduct {
-    pub sale_id: i32,
+    pub sale_id: Option<i32>,
     pub product_id: i32,
     pub tax: Money,
     pub amount: f64,
     pub price: Money,
-    pub discount: Money,
-    pub subtotal: Money,
-    pub sub_total_without_discount: Money,
-    pub discount_calculated: Money,
-    pub taxes_calculated: Money,
-    pub total: Money,
+    pub discount: Option<Money>,
+    pub subtotal: Option<Money>,
+    pub sub_total_without_discount: Option<Money>,
+    pub discount_calculated: Option<Money>,
+    pub taxes_calculated: Option<Money>,
+    pub total: Option<Money>,
     pub observation: Option<String>,
 }
 
@@ -67,7 +67,7 @@ impl SaleProduct {
         let connection = establish_connection();
 
         for mut new_sale_product in vec_sale_products {
-            new_sale_product.sale_id = sale_id;
+            new_sale_product.sale_id = Some(sale_id);
 
             let result_sale_product = 
                 dsl::sale_products
@@ -75,20 +75,21 @@ impl SaleProduct {
                     .first::<SaleProduct>(&connection);
 
             if let Ok(edit_sale_product) = result_sale_product {
+                let discount = (&new_sale_product).discount.clone();
                 diesel::update(dsl::sale_products.find(edit_sale_product.id))
                     .set((dsl::tax.eq(&new_sale_product.tax),
                           dsl::amount.eq(&new_sale_product.amount),
                           dsl::price.eq(&new_sale_product.price),
-                          dsl::discount.eq(&new_sale_product.discount),
-                          dsl::subtotal.eq(&new_sale_product.calculate_sub_total()),
-                          dsl::sub_total_without_discount.eq(&new_sale_product.subtotal_without_discount()),
-                          dsl::discount_calculated.eq(&new_sale_product.calculate_discount()),
-                          dsl::taxes_calculated.eq(&new_sale_product.calculate_taxes()),
-                          dsl::total.eq(&new_sale_product.calculate_total())))
+                          dsl::discount.eq(discount.unwrap_or(Money(0))),
+                          dsl::subtotal.eq(new_sale_product.calculate_sub_total()),
+                          dsl::sub_total_without_discount.eq(new_sale_product.subtotal_without_discount()),
+                          dsl::discount_calculated.eq(new_sale_product.calculate_discount()),
+                          dsl::taxes_calculated.eq(new_sale_product.calculate_taxes()),
+                          dsl::total.eq(new_sale_product.calculate_total())))
                     .get_result::<SaleProduct>(&connection)?;
             } else {
                 diesel::insert_into(sale_products::table)
-                    .values(&new_sale_product)
+                    .values(&new_sale_product.with_calculations())
                     .get_result::<SaleProduct>(&connection)?;
             }
         }
@@ -98,8 +99,21 @@ impl SaleProduct {
 }
 
 impl NewSaleProduct {
+
+    pub fn with_calculations(&self) -> Self {
+        let mut new_sale_product = self.clone();
+        new_sale_product.discount = Some(self.calculate_discount());
+        new_sale_product.subtotal = Some(self.calculate_sub_total());
+        new_sale_product.sub_total_without_discount = Some(self.subtotal_without_discount());
+        new_sale_product.discount_calculated = Some(self.calculate_discount());
+        new_sale_product.taxes_calculated = Some(self.calculate_taxes());
+        new_sale_product.total = Some(self.calculate_total());
+        new_sale_product
+    }
+
     pub fn to_item_calc_method(&self) -> ItemCalculation {
-        ItemCalculation::new(&self.tax, &self.discount, &self.price, self.amount)
+        let discount = (&self).discount.clone();
+        ItemCalculation::new(&self.tax, &discount.unwrap_or(Money(0)), &self.price, self.amount)
     }
 
     pub fn calculate_total(&self) -> Money {
