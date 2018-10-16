@@ -36,10 +36,10 @@ impl ItemCalculation {
     }
 
     pub fn calculate_discount(&self) -> Money {
-        (self.clone().discount * self.subtotal()) / 100.0
+        (self.clone().discount * self.subtotal()) / 10000
     }
 
     pub fn calculate_taxes(&self) -> Money {
-        (self.subtotal_without_discount() * self.clone().tax) / 100.0
+        (self.subtotal_without_discount() * self.clone().tax) / 10000
     }
 }

@@ -50,6 +50,7 @@ mod test {
     }
 
     fn clear(connection: &PgConnection) {
+        use focusvent::schema::currencies::dsl::*;
         use focusvent::schema::prices::dsl::*;
         use focusvent::schema::product_prices::dsl::*;
         use focusvent::schema::product_costs::dsl::*;
@@ -67,5 +68,6 @@ mod test {
         diesel::delete(products).execute(connection).unwrap();
         diesel::delete(prices).execute(connection).unwrap();
         diesel::delete(sales).execute(connection).unwrap();
+        diesel::delete(currencies).execute(connection).unwrap();
     }
 }

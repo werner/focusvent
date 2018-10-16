@@ -16,15 +16,15 @@ impl Money {
 
     fn to_i32_from_str(value: &str) -> Result<i32, ParseFloatError> {
         let float_value = value.parse::<f64>()?;
-        Ok(float_value.round() as i32)
+        Ok(Self::to_i32_from_f64(float_value))
     }
 
     fn to_i32_from_f64(value: f64) -> i32 {
-        value.round() as i32
+        (value * 100.0).round()  as i32
     }
 
     fn to_f64(&self) -> f64 {
-        self.0  as f64
+        self.0 as f64 / 100.0
     }
 
     fn from_f64(value: f64) -> Self {
@@ -101,7 +101,7 @@ impl Mul<f64> for Money {
     type Output = Self;
 
     fn mul(self, other: f64) -> Self {
-        Self::from_f64(self.0 as f64 * other)
+        Money((self.0 as f64 * other) as i32)
     }
 }
 
@@ -137,12 +137,11 @@ impl Div for Money {
     }
 }
 
-impl Div<f64> for Money {
+impl Div<i32> for Money {
     type Output = Self;
 
-    fn div(self, other: f64) -> Self {
-        let value = self.0 as f64;
-        Self::from_f64(value / other)
+    fn div(self, other: i32) -> Self {
+        Money(self.0 / other)
     }
 }
 
