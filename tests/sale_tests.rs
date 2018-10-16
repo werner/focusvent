@@ -94,6 +94,5 @@ pub fn show(product: &Product, client: &Client) {
     let full_sale: FullSale = serde_json::from_str(&response.body_string().unwrap()).unwrap();
     println!("{:?}", full_sale);
     assert_eq!("Jhon", &full_sale.sale.client().unwrap().first_name.unwrap());
-    //TODO: This isn't right, should be Money(11200)
-    assert_eq!(Money(11), full_sale.sale.total);
+    assert_eq!(Money(1120), full_sale.sale.total);
 }
