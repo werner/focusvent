@@ -83,6 +83,11 @@ table! {
 }
 
 table! {
+    use diesel::types::Int4;
+    use diesel::sql_types::Date;
+    use diesel::sql_types::Nullable;
+    use diesel::sql_types::Text;
+    use models::sale::SaleStatusMapping;
     sales (id) {
         id -> Int4,
         client_id -> Int4,
@@ -94,6 +99,7 @@ table! {
         total -> Int4,
         observation -> Nullable<Text>,
         currency_id -> Int4,
+        status -> SaleStatusMapping,
     }
 }
 

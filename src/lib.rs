@@ -17,6 +17,8 @@ extern crate dotenv;
 extern crate chrono;
 #[macro_use]
 extern crate diesel_derive_newtype;
+#[macro_use]
+extern crate diesel_derive_enum;
 
 pub mod handlers;
 pub mod routes;
