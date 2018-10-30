@@ -6,6 +6,7 @@ use models::sale::Sale;
 use models::sale::FullSale;
 use models::sale::FullNewSale;
 use models::sale::SearchSale;
+use models::sale_status::SaleStatus;
 
 #[get("/sales?<params>")]
 pub fn index(params: GetTransactionParams<SearchSale>) -> Result<Json<Vec<Sale>>, status::Custom<String>> {
@@ -35,6 +36,14 @@ pub fn create(sale: FullNewSale) -> Result<Json<Sale>, status::Custom<String>> {
 pub fn update(id: i32, sale: FullNewSale) -> Result<Json<Sale>, status::Custom<String>> {
     match Sale::update(id, sale) {
         Ok(sale) => Ok(Json(sale)),
+        Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
+    }
+}
+
+#[put("/sales/<id>/set_status", format="application/json", data="<sale_status>")]
+pub fn set_status(id: i32, sale_status: SaleStatus) -> Result<Json<bool>, status::Custom<String>> {
+    match SaleStatus::save_status(id, sale_status) {
+        Ok(success) => Ok(Json(success)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
     }
 }

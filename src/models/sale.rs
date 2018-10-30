@@ -1,6 +1,5 @@
 use std::io::Read;
 use std::str::FromStr;
-use std::default::Default;
 use diesel;
 use diesel::sql_types;
 use diesel::prelude::*;
@@ -11,6 +10,8 @@ use models::sale_product::NewSaleProduct;
 use models::calculation::Calculation;
 use models::item_calculation::ItemCalculation;
 use models::money::Money;
+use models::sale_status::SaleStatus;
+use models::sale_status::SaleStatusMapping;
 use models::client::Client;
 use models::client::BasicModelActions;
 use rocket::{ Request, Data };
@@ -21,8 +22,6 @@ use schema;
 use schema::sales;
 use serde_json;
 use handlers::base::Search;
-use rocket::request::FromFormValue;
-use rocket::http::RawStr;
 
 type BoxedQuery<'a> = 
     diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer,
@@ -35,39 +34,9 @@ type BoxedQuery<'a> =
                                                      sql_types::Integer,
                                                      sql_types::Nullable<sql_types::Text>,
                                                      sql_types::Integer,
-                                                     db_enum_impl_SaleStatus::SaleStatusMapping
+                                                     SaleStatusMapping
                                                      ),
                                                      schema::sales::table, diesel::pg::Pg>;
-
-#[derive(Serialize, Deserialize, Debug, Clone, DbEnum)]
-pub enum SaleStatus {
-    Draft,
-    Saved,
-    Active,
-    Cancelled,
-    Payed,
-    Overdue
-}
-
-impl Default for SaleStatus {
-    fn default() -> SaleStatus { SaleStatus::Draft }
-}
-
-impl<'v> FromFormValue<'v> for SaleStatus {
-    type Error = &'v RawStr;
-
-    fn from_form_value(form_value: &'v RawStr) -> Result<SaleStatus, &'v RawStr> {
-        match form_value.as_str() {
-            "draft" => Ok(SaleStatus::Draft),
-            "saved" => Ok(SaleStatus::Saved),
-            "active" => Ok(SaleStatus::Active),
-            "cancelled" => Ok(SaleStatus::Cancelled),
-            "payed" => Ok(SaleStatus::Payed),
-            "overdue" => Ok(SaleStatus::Overdue),
-            _ => Err(form_value)
-        }
-    }
-}
 
 #[derive(AsChangeset, Insertable, Serialize, Deserialize, Clone, Queryable, Debug, FromForm)]
 #[table_name="sales"]

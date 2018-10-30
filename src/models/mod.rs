@@ -14,6 +14,7 @@ pub mod calculation;
 pub mod db_connection;
 pub mod money;
 pub mod currency;
+pub mod sale_status;
 
 #[macro_use]
 pub mod basic_model_actions;
