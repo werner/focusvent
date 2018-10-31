@@ -1,29 +1,29 @@
-use std::io::Read;
-use std::default::Default;
 use diesel;
 use diesel::prelude::*;
 use diesel::query_dsl::RunQueryDsl;
 use diesel::QueryDsl;
-use rocket::request::FromFormValue;
-use rocket::http::RawStr;
 use models::db_connection::*;
 use models::sale::Sale;
+use rocket::http::RawStr;
+use rocket::request::FromFormValue;
+use std::default::Default;
+use std::io::Read;
 
 #[derive(Serialize, Deserialize, Debug, Clone, DbEnum)]
 pub enum SaleStatus {
     Draft,
     Saved,
-    Active,
+    Overdue,
     Cancelled,
     Payed,
-    Overdue,
-    Error
 }
 
 from_data!(SaleStatus);
 
 impl Default for SaleStatus {
-    fn default() -> SaleStatus { SaleStatus::Draft }
+    fn default() -> SaleStatus {
+        SaleStatus::Draft
+    }
 }
 
 impl<'v> FromFormValue<'v> for SaleStatus {
@@ -33,25 +33,37 @@ impl<'v> FromFormValue<'v> for SaleStatus {
         match form_value.as_str() {
             "draft" => Ok(SaleStatus::Draft),
             "saved" => Ok(SaleStatus::Saved),
-            "active" => Ok(SaleStatus::Active),
+            "overdue" => Ok(SaleStatus::Overdue),
             "cancelled" => Ok(SaleStatus::Cancelled),
             "payed" => Ok(SaleStatus::Payed),
-            "overdue" => Ok(SaleStatus::Overdue),
-            "error" => Ok(SaleStatus::Error),
-            _ => Err(form_value)
+            _ => Err(form_value),
         }
     }
 }
 
 impl SaleStatus {
-    pub fn save_status(id: i32, sale_status: SaleStatus) -> Result<bool, diesel::result::Error> {
+    pub fn to_saved(id: i32) -> Result<bool, String> {
+        Self::save_status(id, SaleStatus::Draft, SaleStatus::Saved)
+    }
+
+    pub fn to_cancelled(id: i32) -> Result<bool, String> {
+        Self::save_status(id, SaleStatus::Saved, SaleStatus::Cancelled)
+    }
+
+    fn save_status(
+        id: i32,
+        previous_status: SaleStatus,
+        next_status: SaleStatus,
+    ) -> Result<bool, String> {
         use schema::sales::dsl;
         let connection = establish_connection();
 
-        diesel::update(dsl::sales.find(id))
-            .set(dsl::status.eq(sale_status))
-            .get_result::<Sale>(&connection)?;
-    
-        Ok(true)
+        match diesel::update(dsl::sales.find(id).filter(dsl::status.eq(previous_status)))
+            .set(dsl::status.eq(next_status))
+            .get_result::<Sale>(&connection)
+        {
+            Ok(_) => Ok(true),
+            Err(_) => Err("Not valid State".to_string()),
+        }
     }
 }

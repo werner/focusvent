@@ -40,9 +40,17 @@ pub fn update(id: i32, sale: FullNewSale) -> Result<Json<Sale>, status::Custom<S
     }
 }
 
-#[put("/sales/<id>/set_status", format="application/json", data="<sale_status>")]
-pub fn set_status(id: i32, sale_status: SaleStatus) -> Result<Json<bool>, status::Custom<String>> {
-    match SaleStatus::save_status(id, sale_status) {
+#[put("/sales/<id>/save", format="application/json")]
+pub fn save(id: i32) -> Result<Json<bool>, status::Custom<String>> {
+    match SaleStatus::to_saved(id) {
+        Ok(success) => Ok(Json(success)),
+        Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
+    }
+}
+
+#[put("/sales/<id>/cancel", format="application/json")]
+pub fn cancel(id: i32) -> Result<Json<bool>, status::Custom<String>> {
+    match SaleStatus::to_cancelled(id) {
         Ok(success) => Ok(Json(success)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
     }

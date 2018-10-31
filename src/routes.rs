@@ -53,7 +53,8 @@ pub fn routes() -> Vec<rocket::Route> {
             sales::create,
             sales::update,
             sales::delete,
-            sales::set_status,
+            sales::save,
+            sales::cancel,
         ];
     
     manual_routes.append(&mut automatic_routes);
