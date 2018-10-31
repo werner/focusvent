@@ -100,6 +100,7 @@ table! {
         observation -> Nullable<Text>,
         currency_id -> Int4,
         status -> SaleStatusMapping,
+        expiring_date -> Nullable<Date>,
     }
 }
 

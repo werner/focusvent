@@ -34,7 +34,8 @@ type BoxedQuery<'a> =
                                                      sql_types::Integer,
                                                      sql_types::Nullable<sql_types::Text>,
                                                      sql_types::Integer,
-                                                     SaleStatusMapping
+                                                     SaleStatusMapping,
+                                                     sql_types::Nullable<sql_types::Date>
                                                      ),
                                                      schema::sales::table, diesel::pg::Pg>;
 
@@ -52,7 +53,8 @@ pub struct Sale {
     pub observation: Option<String>,
     pub currency_id: i32,
     #[serde(skip_deserializing)]
-    pub status: SaleStatus
+    pub status: SaleStatus,
+    pub expiring_date: Option<NaiveDateForm>
 }
 
 #[derive(Insertable, Serialize, Deserialize, Clone, Debug, FromForm)]
@@ -68,7 +70,8 @@ pub struct NewSale {
     pub observation: Option<String>,
     pub currency_id: i32,
     #[serde(skip_deserializing)]
-    pub status: SaleStatus
+    pub status: SaleStatus,
+    pub expiring_date: Option<NaiveDateForm>
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -95,7 +98,8 @@ pub struct SearchSale {
     pub total: Option<Money>,
     pub observation: Option<String>,
     pub currency_id: Option<i32>,
-    pub status: Option<SaleStatus>
+    pub status: Option<SaleStatus>,
+    pub expiring_date: Option<NaiveDateForm>
 }
 
 impl Sale {
@@ -195,6 +199,9 @@ impl Sale {
             }
             if let Some(sale_observation) = sale.observation {
                 query = query.filter(observation.like(sale_observation));
+            }
+            if let Some(sale_status) = sale.status {
+                query = query.filter(status.eq(sale_status));
             }
         }
 
