@@ -3,10 +3,10 @@ use diesel::RunQueryDsl;
 use diesel::QueryDsl;
 use diesel::ExpressionMethods;
 use diesel::BoolExpressionMethods;
-use schema::sale_products;
-use models::money::Money;
-use models::db_connection::*;
-use models::item_calculation::ItemCalculation;
+use crate::schema::sale_products;
+use crate::models::money::Money;
+use crate::models::db_connection::*;
+use crate::models::item_calculation::ItemCalculation;
 
 #[derive(AsChangeset, Insertable, Serialize, Deserialize, Clone, PartialEq, Identifiable, Associations,
          Queryable, Debug, FromForm)]
@@ -62,7 +62,7 @@ pub struct SearchSaleProduct {
 
 impl SaleProduct {
     pub fn batch_action(vec_sale_products: Vec<NewSaleProduct>, sale_id: i32) -> Result<bool, diesel::result::Error> {
-        use schema::sale_products::dsl;
+        use crate::schema::sale_products::dsl;
         let connection = establish_connection();
 
         for mut new_sale_product in vec_sale_products {

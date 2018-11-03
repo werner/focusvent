@@ -2,8 +2,8 @@ use diesel;
 use diesel::prelude::*;
 use diesel::query_dsl::RunQueryDsl;
 use diesel::QueryDsl;
-use models::db_connection::*;
-use models::sale::Sale;
+use crate::models::db_connection::*;
+use crate::models::sale::Sale;
 use rocket::http::RawStr;
 use rocket::request::FromFormValue;
 use std::default::Default;
@@ -52,7 +52,7 @@ impl SaleStatus {
         previous_status: SaleStatus,
         next_status: SaleStatus,
     ) -> Result<bool, String> {
-        use schema::sales::dsl;
+        use crate::schema::sales::dsl;
         let connection = establish_connection();
 
         match diesel::update(dsl::sales.find(id).filter(dsl::status.eq(previous_status)))

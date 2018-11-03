@@ -3,9 +3,9 @@ macro_rules! basic_model_actions {
     ($table_model:ident, $type_model:ident, $new_type_model:ty, $search_struct:ident) => {
 
         pub trait BasicModelActions {
-            fn list(limit: i64, offset: i64, search: Option<::handlers::base::Search<$search_struct>>) ->
+            fn list(limit: i64, offset: i64, search: Option<crate::handlers::base::Search<$search_struct>>) ->
                 Result<Vec<$type_model>, diesel::result::Error> {
-                let connection = ::models::db_connection::establish_connection();
+                let connection = crate::models::db_connection::establish_connection();
 
                 let query = $type_model::searching_records(search);
 
@@ -16,7 +16,7 @@ macro_rules! basic_model_actions {
             }
 
             fn create(new_type_model: $new_type_model) -> Result<$type_model, diesel::result::Error> {
-                let connection = ::models::db_connection::establish_connection();
+                let connection = crate::models::db_connection::establish_connection();
 
                 diesel::insert_into($table_model::table)
                     .values(&new_type_model)
@@ -24,8 +24,8 @@ macro_rules! basic_model_actions {
             }
 
             fn show(request_id: i32) -> Result<$type_model, diesel::result::Error> {
-                use schema::$table_model::dsl::*;
-                let connection = ::models::db_connection::establish_connection();
+                use crate::schema::$table_model::dsl::*;
+                let connection = crate::models::db_connection::establish_connection();
 
                 $table_model
                     .find(request_id)
@@ -33,8 +33,8 @@ macro_rules! basic_model_actions {
             }
 
             fn update(param_id: i32, type_model: $type_model) -> Result<$type_model, diesel::result::Error> {
-                use schema::$table_model::dsl::*;
-                let connection = ::models::db_connection::establish_connection();
+                use crate::schema::$table_model::dsl::*;
+                let connection = crate::models::db_connection::establish_connection();
 
                 diesel::update($table_model.find(param_id))
                     .set(&type_model)
@@ -42,8 +42,8 @@ macro_rules! basic_model_actions {
             }
 
             fn delete(param_id: i32) -> Result<usize, diesel::result::Error> {
-                use schema::$table_model::dsl::*;
-                let connection = ::models::db_connection::establish_connection();
+                use crate::schema::$table_model::dsl::*;
+                let connection = crate::models::db_connection::establish_connection();
 
                 diesel::delete($table_model.find(param_id))
                     .execute(&connection)

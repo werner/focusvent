@@ -4,10 +4,10 @@ use diesel::QueryDsl;
 use diesel::RunQueryDsl;
 use diesel::TextExpressionMethods;
 use diesel::sql_types;
-use schema;
-use schema::clients;
-use handlers::base::Search;
-use basic_model_actions;
+use crate::schema;
+use crate::schema::clients;
+use crate::handlers::base::Search;
+use crate::basic_model_actions;
 
 type BoxedQuery<'a> = 
     diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer,
@@ -51,7 +51,7 @@ pub struct NewClient {
 impl Client {
 
     fn searching_records<'a>(search: Option<Search<SearchClient>>) -> BoxedQuery<'a> {
-        use schema::clients::dsl::*;
+        use crate::schema::clients::dsl::*;
 
         let mut query = schema::clients::table.into_boxed::<diesel::pg::Pg>();
 

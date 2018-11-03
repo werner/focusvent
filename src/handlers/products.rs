@@ -1,12 +1,12 @@
-use handlers::base::GetTransactionParams;
+use crate::handlers::base::GetTransactionParams;
 use rocket::response::status;
 use rocket::http::Status;
 use rocket_contrib::Json;
-use models::product::FullProduct;
-use models::product::Product;
-use models::product::SearchProduct;
-use models::product::FullNewProduct;
-use data_guards::from_data::RequestResource;
+use crate::models::product::FullProduct;
+use crate::models::product::Product;
+use crate::models::product::SearchProduct;
+use crate::models::product::FullNewProduct;
+use crate::data_guards::from_data::RequestResource;
 
 #[get("/products?<params>")]
 pub fn index(params: GetTransactionParams<SearchProduct>) -> Result<Json<Vec<Product>>, status::Custom<String>> {

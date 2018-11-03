@@ -1,11 +1,11 @@
-use handlers::products;
-use handlers::prices;
-use handlers::costs;
-use handlers::suppliers;
-use handlers::clients;
-use handlers::currencies;
-use handlers::taxes;
-use handlers::sales;
+use crate::handlers::products;
+use crate::handlers::prices;
+use crate::handlers::costs;
+use crate::handlers::suppliers;
+use crate::handlers::clients;
+use crate::handlers::currencies;
+use crate::handlers::taxes;
+use crate::handlers::sales;
 use rocket;
 
 pub fn routes() -> Vec<rocket::Route> {

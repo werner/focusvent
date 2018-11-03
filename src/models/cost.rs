@@ -1,10 +1,10 @@
 use diesel;
 use diesel::prelude::*;
 use diesel::sql_types;
-use schema;
-use schema::costs;
-use handlers::base::Search;
-use basic_model_actions;
+use crate::schema;
+use crate::schema::costs;
+use crate::handlers::base::Search;
+use crate::basic_model_actions;
 
 type BoxedQuery<'a> = 
     diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer, sql_types::Text),
@@ -32,7 +32,7 @@ pub struct NewCost {
 impl Cost {
 
     fn searching_records<'a>(search: Option<Search<SearchCost>>) -> BoxedQuery<'a> {
-        use schema::costs::dsl::*;
+        use crate::schema::costs::dsl::*;
 
         let mut query = schema::costs::table.into_boxed::<diesel::pg::Pg>();
 

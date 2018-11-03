@@ -1,12 +1,12 @@
-use handlers::base::GetTransactionParams;
+use crate::handlers::base::GetTransactionParams;
 use rocket::response::status;
 use rocket::http::Status;
 use rocket_contrib::Json;
-use models::sale::Sale;
-use models::sale::FullSale;
-use models::sale::FullNewSale;
-use models::sale::SearchSale;
-use models::sale_status::SaleStatus;
+use crate::models::sale::Sale;
+use crate::models::sale::FullSale;
+use crate::models::sale::FullNewSale;
+use crate::models::sale::SearchSale;
+use crate::models::sale_status::SaleStatus;
 
 #[get("/sales?<params>")]
 pub fn index(params: GetTransactionParams<SearchSale>) -> Result<Json<Vec<Sale>>, status::Custom<String>> {

@@ -1,11 +1,11 @@
-use handlers::base::GetTransactionParams;
+use crate::handlers::base::GetTransactionParams;
 use rocket::response::status;
 use rocket::http::Status;
 use rocket_contrib::Json;
-use models::tax::Tax;
-use models::tax::SearchTax;
-use models::tax::NewTax;
-use models::tax::BasicModelActions;
-use basic_handler_actions;
+use crate::models::tax::Tax;
+use crate::models::tax::SearchTax;
+use crate::models::tax::NewTax;
+use crate::models::tax::BasicModelActions;
+use crate::basic_handler_actions;
 
 basic_handler_actions!("taxes", Tax, NewTax, SearchTax);

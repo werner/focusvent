@@ -1,11 +1,11 @@
-use basic_model_actions;
+use crate::basic_model_actions;
 use diesel;
 use diesel::prelude::*;
 use diesel::sql_types;
-use handlers::base::Search;
-use models::db_connection;
-use schema;
-use schema::currencies;
+use crate::handlers::base::Search;
+use crate::models::db_connection;
+use crate::schema;
+use crate::schema::currencies;
 
 type BoxedQuery<'a> = diesel::query_builder::BoxedSelectStatement<
     'a,
@@ -58,7 +58,7 @@ pub struct NewCurrency {
 
 impl Currency {
     pub fn get_currency() -> Self {
-        use schema::currencies::dsl::*;
+        use crate::schema::currencies::dsl::*;
         let connection = db_connection::establish_connection();
 
         let maybe_currency = currencies
@@ -73,7 +73,7 @@ impl Currency {
     }
 
     fn get_default_currency() -> Self {
-        use schema::currencies::dsl::*;
+        use crate::schema::currencies::dsl::*;
         let connection = db_connection::establish_connection();
 
         let default = currencies
@@ -95,7 +95,7 @@ impl Currency {
     }
 
     fn searching_records<'a>(search: Option<Search<SearchCurrency>>) -> BoxedQuery<'a> {
-        use schema::currencies::dsl::*;
+        use crate::schema::currencies::dsl::*;
 
         let mut query = schema::currencies::table.into_boxed::<diesel::pg::Pg>();
 

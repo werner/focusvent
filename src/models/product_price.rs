@@ -4,8 +4,8 @@ use diesel::QueryDsl;
 use diesel::ExpressionMethods;
 use diesel::BoolExpressionMethods;
 use diesel::pg::PgConnection;
-use schema::product_prices;
-use models::db_connection::*;
+use crate::schema::product_prices;
+use crate::models::db_connection::*;
 
 #[derive(Identifiable, Associations, Serialize, Deserialize, Queryable, Debug, Clone)]
 pub struct ProductPrice {
@@ -32,7 +32,7 @@ pub struct FullProductPrice {
 
 impl ProductPrice {
     pub fn batch_action(vec_prices: Vec<EditableProductPrice>, product_id: i32) -> Result<bool, diesel::result::Error> {
-        use schema::product_prices::dsl;
+        use crate::schema::product_prices::dsl;
         let connection = establish_connection();
 
         for mut editable_product_price in vec_prices {

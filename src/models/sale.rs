@@ -3,25 +3,25 @@ use std::str::FromStr;
 use diesel;
 use diesel::sql_types;
 use diesel::prelude::*;
-use models::db_connection::*;
-use models::naive_date_form::NaiveDateForm;
-use models::sale_product::SaleProduct;
-use models::sale_product::NewSaleProduct;
-use models::calculation::Calculation;
-use models::item_calculation::ItemCalculation;
-use models::money::Money;
-use models::sale_status::SaleStatus;
-use models::sale_status::SaleStatusMapping;
-use models::client::Client;
-use models::client::BasicModelActions;
+use crate::models::db_connection::*;
+use crate::models::naive_date_form::NaiveDateForm;
+use crate::models::sale_product::SaleProduct;
+use crate::models::sale_product::NewSaleProduct;
+use crate::models::calculation::Calculation;
+use crate::models::item_calculation::ItemCalculation;
+use crate::models::money::Money;
+use crate::models::sale_status::SaleStatus;
+use crate::models::sale_status::SaleStatusMapping;
+use crate::models::client::Client;
+use crate::models::client::BasicModelActions;
 use rocket::{ Request, Data };
 use rocket::data:: { FromData, Outcome };
 use rocket::http::Status;
 use rocket::Outcome::{ Failure, Success };
-use schema;
-use schema::sales;
+use crate::schema;
+use crate::schema::sales;
 use serde_json;
-use handlers::base::Search;
+use crate::handlers::base::Search;
 
 type BoxedQuery<'a> = 
     diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer,
@@ -116,8 +116,8 @@ impl Sale {
     }
 
     pub fn show(request_id: i32) -> Result<FullSale, diesel::result::Error> {
-        use schema::sales::dsl::*;
-        use schema::sale_products;
+        use crate::schema::sales::dsl::*;
+        use crate::schema::sale_products;
 
         let connection = establish_connection();
 
@@ -150,7 +150,7 @@ impl Sale {
     }
 
     pub fn update(param_id: i32, full_sale: FullNewSale) -> Result<Sale, diesel::result::Error> {
-        use schema::sales::dsl::*;
+        use crate::schema::sales::dsl::*;
         let connection = establish_connection();
 
         let sale = diesel::update(sales.find(param_id))
@@ -173,7 +173,7 @@ impl Sale {
     }
 
     pub fn delete(param_id: i32) -> Result<usize, diesel::result::Error> {
-        use schema::sales::dsl::*;
+        use crate::schema::sales::dsl::*;
         let connection = establish_connection();
 
         diesel::delete(sales.find(param_id))
@@ -185,7 +185,7 @@ impl Sale {
     }
 
     fn searching_records<'a>(search: Option<Search<SearchSale>>) -> BoxedQuery<'a> {
-        use schema::sales::dsl::*;
+        use crate::schema::sales::dsl::*;
 
         let mut query = schema::sales::table.into_boxed::<diesel::pg::Pg>();
 

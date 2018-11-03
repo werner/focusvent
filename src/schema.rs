@@ -87,7 +87,7 @@ table! {
     use diesel::sql_types::Date;
     use diesel::sql_types::Nullable;
     use diesel::sql_types::Text;
-    use models::sale_status::SaleStatusMapping;
+    use crate::models::sale_status::SaleStatusMapping;
     sales (id) {
         id -> Int4,
         client_id -> Int4,

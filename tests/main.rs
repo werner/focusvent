@@ -15,9 +15,9 @@ mod test {
     use rocket;
     use rocket::local::Client;
     use focusvent::models::db_connection::*;
-    use product_tests;
-    use price_tests;
-    use sale_tests;
+    use crate::product_tests;
+    use crate::price_tests;
+    use crate::sale_tests;
 
     fn rocket() -> rocket::Rocket {
         rocket::ignite().mount("/", ::focusvent::routes::routes())

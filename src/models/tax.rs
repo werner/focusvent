@@ -1,10 +1,10 @@
 use diesel;
 use diesel::prelude::*;
 use diesel::sql_types;
-use schema;
-use schema::taxes;
-use handlers::base::Search;
-use basic_model_actions;
+use crate::schema;
+use crate::schema::taxes;
+use crate::handlers::base::Search;
+use crate::basic_model_actions;
 
 type BoxedQuery<'a> = 
     diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer, sql_types::Text, sql_types::Integer),
@@ -35,7 +35,7 @@ pub struct NewTax {
 impl Tax {
 
     fn searching_records<'a>(search: Option<Search<SearchTax>>) -> BoxedQuery<'a> {
-        use schema::taxes::dsl::*;
+        use crate::schema::taxes::dsl::*;
 
         let mut query = schema::taxes::table.into_boxed::<diesel::pg::Pg>();
 

@@ -2,6 +2,7 @@
 name = "focusvent"
 version = "0.1.0"
 authors = ["werner <werner@yahoo.es>"]
+edition = "2018"
 
 [dependencies]
 rocket = "0.3.16"

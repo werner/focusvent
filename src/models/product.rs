@@ -1,19 +1,19 @@
 use diesel;
 use diesel::prelude::*;
 use diesel::sql_types;
-use handlers::base::Search;
-use models::db_connection::*;
-use models::product_price::ProductPrice;
-use models::product_price::EditableProductPrice;
-use models::product_price::FullProductPrice;
-use models::price::Price;
-use models::product_cost::ProductCost;
-use models::product_cost::EditableProductCost;
-use models::product_cost::FullProductCost;
-use models::cost::Cost;
-use models::supplier::Supplier;
-use schema;
-use schema::products;
+use crate::handlers::base::Search;
+use crate::models::db_connection::*;
+use crate::models::product_price::ProductPrice;
+use crate::models::product_price::EditableProductPrice;
+use crate::models::product_price::FullProductPrice;
+use crate::models::price::Price;
+use crate::models::product_cost::ProductCost;
+use crate::models::product_cost::EditableProductCost;
+use crate::models::product_cost::FullProductCost;
+use crate::models::cost::Cost;
+use crate::models::supplier::Supplier;
+use crate::schema;
+use crate::schema::products;
 
 #[derive(Serialize, Deserialize, Clone, Queryable, Debug, FromForm)]
 pub struct Product {
@@ -77,12 +77,12 @@ impl Product {
     }
 
     pub fn show(request_id: i32) -> Result<FullProduct, diesel::result::Error> {
-        use schema::products::dsl::*;
-        use schema::product_prices;
-        use schema::product_costs;
-        use schema::suppliers;
-        use schema::costs;
-        use schema::prices;
+        use crate::schema::products::dsl::*;
+        use crate::schema::product_prices;
+        use crate::schema::product_costs;
+        use crate::schema::suppliers;
+        use crate::schema::costs;
+        use crate::schema::prices;
 
         let connection = establish_connection();
         let mut full_product: FullProduct =
@@ -149,7 +149,7 @@ impl Product {
     }
 
     pub fn update(param_id: i32, full_product: FullNewProduct) -> Result<Product, diesel::result::Error> {
-        use schema::products::dsl::*;
+        use crate::schema::products::dsl::*;
         let connection = establish_connection();
 
         let product = diesel::update(products.find(param_id))
@@ -167,7 +167,7 @@ impl Product {
     }
 
     pub fn delete(param_id: i32) -> Result<usize, diesel::result::Error> {
-        use schema::products::dsl::*;
+        use crate::schema::products::dsl::*;
         let connection = establish_connection();
 
         diesel::delete(products.find(param_id))
@@ -175,7 +175,7 @@ impl Product {
     }
 
     fn searching_product<'a>(search: Option<Search<SearchProduct>>) -> BoxedQuery<'a> {
-        use schema::products::dsl::*;
+        use crate::schema::products::dsl::*;
 
         let mut query = schema::products::table.into_boxed::<diesel::pg::Pg>();
 
