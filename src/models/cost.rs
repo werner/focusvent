@@ -1,4 +1,3 @@
-use std::io::Read;
 use diesel;
 use diesel::prelude::*;
 use diesel::sql_types;
@@ -52,5 +51,3 @@ impl Cost {
 }
 
 basic_model_actions!(costs, Cost, NewCost, SearchCost);
-from_data!(Cost);
-from_data!(NewCost);

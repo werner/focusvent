@@ -1,4 +1,3 @@
-use std::io::Read;
 use diesel;
 use diesel::prelude::*;
 use diesel::sql_types;
@@ -212,11 +211,6 @@ impl Product {
         }
     }
 }
-
-from_data!(Product);
-from_data!(NewProduct);
-from_data!(FullNewProduct);
-from_data!(FullProduct);
 
 use std::str::FromStr;
 use serde_json;

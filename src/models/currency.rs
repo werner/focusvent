@@ -6,7 +6,6 @@ use handlers::base::Search;
 use models::db_connection;
 use schema;
 use schema::currencies;
-use std::io::Read;
 
 type BoxedQuery<'a> = diesel::query_builder::BoxedSelectStatement<
     'a,
@@ -118,5 +117,3 @@ impl Currency {
 }
 
 basic_model_actions!(currencies, Currency, NewCurrency, SearchCurrency);
-from_data!(Currency);
-from_data!(NewCurrency);

@@ -1,4 +1,3 @@
-use std::io::Read;
 use diesel;
 use diesel::QueryDsl;
 use diesel::RunQueryDsl;
@@ -83,5 +82,3 @@ impl Supplier {
 }
 
 basic_model_actions!(suppliers, Supplier, NewSupplier, SearchSupplier);
-from_data!(Supplier);
-from_data!(NewSupplier);

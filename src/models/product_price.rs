@@ -1,4 +1,3 @@
-use std::io::Read;
 use diesel;
 use diesel::RunQueryDsl;
 use diesel::QueryDsl;
@@ -62,5 +61,3 @@ impl ProductPrice {
             .get_result::<ProductPrice>(connection)
     }
 }
-
-from_data!(ProductPrice);

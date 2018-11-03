@@ -259,10 +259,6 @@ impl FullNewSale {
     }
 }
 
-from_data!(Sale);
-from_data!(NewSale);
-from_data!(FullSale);
-
 impl FromStr for Sale {
     type Err = serde_json::Error;
 

@@ -1,4 +1,3 @@
-use std::io::Read;
 use diesel;
 use diesel::prelude::*;
 use diesel::sql_types;
@@ -51,5 +50,3 @@ impl Price {
 }
  
 basic_model_actions!(prices, Price, NewPrice, SearchPrice);
-from_data!(Price);
-from_data!(NewPrice);

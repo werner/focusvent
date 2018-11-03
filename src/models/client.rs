@@ -1,4 +1,3 @@
-use std::io::Read;
 use diesel;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
@@ -83,5 +82,3 @@ impl Client {
 }
 
 basic_model_actions!(clients, Client, NewClient, SearchClient);
-from_data!(Client);
-from_data!(NewClient);

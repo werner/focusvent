@@ -1,4 +1,3 @@
-use std::io::Read;
 use diesel;
 use diesel::RunQueryDsl;
 use diesel::QueryDsl;
@@ -142,6 +141,3 @@ impl NewSaleProduct {
     }
 
 }
-
-from_data!(SaleProduct);
-from_data!(NewSaleProduct);

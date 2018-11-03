@@ -1,4 +1,3 @@
-use std::io::Read;
 use diesel;
 use diesel::prelude::*;
 use diesel::sql_types;
@@ -58,5 +57,3 @@ impl Tax {
 }
 
 basic_model_actions!(taxes, Tax, NewTax, SearchTax);
-from_data!(Tax);
-from_data!(NewTax);

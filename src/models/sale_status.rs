@@ -7,7 +7,6 @@ use models::sale::Sale;
 use rocket::http::RawStr;
 use rocket::request::FromFormValue;
 use std::default::Default;
-use std::io::Read;
 
 #[derive(Serialize, Deserialize, Debug, Clone, DbEnum)]
 pub enum SaleStatus {
@@ -17,8 +16,6 @@ pub enum SaleStatus {
     Cancelled,
     Payed,
 }
-
-from_data!(SaleStatus);
 
 impl Default for SaleStatus {
     fn default() -> SaleStatus {

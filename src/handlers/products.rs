@@ -6,6 +6,7 @@ use models::product::FullProduct;
 use models::product::Product;
 use models::product::SearchProduct;
 use models::product::FullNewProduct;
+use data_guards::from_data::RequestResource;
 
 #[get("/products?<params>")]
 pub fn index(params: GetTransactionParams<SearchProduct>) -> Result<Json<Vec<Product>>, status::Custom<String>> {
@@ -23,17 +24,17 @@ pub fn show(id: i32) -> Result<Json<FullProduct>, status::Custom<String>> {
     }
 }
 
-#[post("/products", format="application/json", data="<product>")]
-pub fn create(product: FullNewProduct) -> Result<Json<Product>, status::Custom<String>> {
-    match Product::create(product.clone()) {
+#[post("/products", format="application/json", data="<request>")]
+pub fn create(request: RequestResource<FullNewProduct>) -> Result<Json<Product>, status::Custom<String>> {
+    match Product::create(request.0) {
         Ok(product) => Ok(Json(product)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
     }
 }
 
-#[put("/products/<id>", format="application/json", data="<product>")]
-pub fn update(id: i32, product: FullNewProduct) -> Result<Json<Product>, status::Custom<String>> {
-    match Product::update(id, product) {
+#[put("/products/<id>", format="application/json", data="<request>")]
+pub fn update(id: i32, request: RequestResource<FullNewProduct>) -> Result<Json<Product>, status::Custom<String>> {
+    match Product::update(id, request.0) {
         Ok(product) => Ok(Json(product)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
     }
