@@ -23,6 +23,9 @@ use crate::schema::sales;
 use serde_json;
 use crate::handlers::base::Search;
 
+#[derive(Serialize, Deserialize, Responder)]
+pub struct SaleList(pub Vec<Sale>);
+
 type BoxedQuery<'a> = 
     diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer,
                                                      sql_types::Integer,
@@ -40,7 +43,7 @@ type BoxedQuery<'a> =
                                                      schema::sales::table, diesel::pg::Pg>;
 
 #[derive(AsChangeset, Insertable, Serialize, Deserialize, Clone, Queryable, 
-         Debug, FromForm, Responder)]
+         Debug, FromForm)]
 #[table_name="sales"]
 pub struct Sale {
     pub id: i32,
@@ -75,7 +78,7 @@ pub struct NewSale {
     pub expiring_date: Option<NaiveDateForm>
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, Responder)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct FullSale {
     pub sale: Sale,
     pub sale_products: Vec<SaleProduct>
@@ -105,7 +108,7 @@ pub struct SearchSale {
 
 impl Sale {
     pub fn list(limit: i64, offset: i64, search: Option<Search<SearchSale>>) ->
-        Result<Vec<Sale>, diesel::result::Error> {
+        Result<SaleList, diesel::result::Error> {
             let connection = establish_connection();
             
             let query = Self::searching_records(search);
@@ -114,6 +117,7 @@ impl Sale {
                 .limit(limit)
                 .offset(offset)
                 .load(&connection)
+                .map(|raw_sale_list| SaleList(raw_sale_list))
     }
 
     pub fn show(request_id: i32) -> Result<FullSale, diesel::result::Error> {

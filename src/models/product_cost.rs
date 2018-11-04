@@ -7,7 +7,8 @@ use diesel::pg::PgConnection;
 use crate::schema::product_costs;
 use crate::models::db_connection::*;
 
-#[derive(Identifiable, Associations, Serialize, Deserialize, Queryable, Debug)]
+#[derive(Identifiable, Associations, Serialize, Deserialize, Queryable, 
+         Debug, FromData, Responder)]
 pub struct ProductCost {
     pub id: i32,
     pub product_id: i32,
@@ -16,7 +17,7 @@ pub struct ProductCost {
     pub cost: i32
 }
 
-#[derive(Serialize, Deserialize, Insertable, Clone, Debug)]
+#[derive(Serialize, Deserialize, Insertable, Clone, Debug, Responder)]
 #[table_name="product_costs"]
 pub struct EditableProductCost {
     pub product_id: Option<i32>,
@@ -25,7 +26,7 @@ pub struct EditableProductCost {
     pub cost: i32
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Responder)]
 pub struct FullProductCost {
     pub cost_id: i32,
     pub supplier_id: i32,

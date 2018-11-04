@@ -6,60 +6,55 @@ use crate::models::sale::Sale;
 use crate::models::sale::FullSale;
 use crate::models::sale::FullNewSale;
 use crate::models::sale::SearchSale;
+use crate::models::sale::SaleList;
 use crate::models::sale_status::SaleStatus;
 
 #[get("/sales?<params>")]
-pub fn index(params: GetTransactionParams<SearchSale>) -> Result<Json<Vec<Sale>>, status::Custom<String>> {
-    match Sale::list(params.limit.unwrap_or(10), params.offset.unwrap_or(0), params.search) {
-        Ok(sales) => Ok(Json(sales)),
-        Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
-    }
+pub fn index(params: GetTransactionParams<SearchSale>) -> Result<SaleList, status::Custom<String>> {
+    Sale::list(params.limit.unwrap_or(10),
+               params.offset.unwrap_or(0),
+               params.search)
+        .map_err(|error| status::Custom(Status::NotFound, error.to_string()))
 }
 
 #[get("/sales/<id>", format="application/json")]
 pub fn show(id: i32) -> Result<Json<FullSale>, status::Custom<String>> {
-    match Sale::show(id) {
-        Ok(sale) => Ok(Json(sale)),
-        Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
-    }
+    Sale::show(id)
+        .map(|sale| Json(sale))
+        .map_err(|error| status::Custom(Status::NotFound, error.to_string()))
 }
 
 #[post("/sales", format="application/json", data="<sale>")]
 pub fn create(sale: FullNewSale) -> Result<Json<Sale>, status::Custom<String>> {
-    match Sale::create(sale.clone()) {
-        Ok(sale) => Ok(Json(sale)),
-        Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
-    }
+    Sale::create(sale)
+        .map(|sale| Json(sale))
+        .map_err(|error| status::Custom(Status::InternalServerError, error.to_string()))
 }
 
 #[put("/sales/<id>", format="application/json", data="<sale>")]
 pub fn update(id: i32, sale: FullNewSale) -> Result<Json<Sale>, status::Custom<String>> {
-    match Sale::update(id, sale) {
-        Ok(sale) => Ok(Json(sale)),
-        Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
-    }
+    Sale::update(id, sale)
+        .map(|sale| Json(sale))
+        .map_err(|error| status::Custom(Status::InternalServerError, error.to_string()))
 }
 
 #[put("/sales/<id>/save", format="application/json")]
 pub fn save(id: i32) -> Result<Json<bool>, status::Custom<String>> {
-    match SaleStatus::to_saved(id) {
-        Ok(success) => Ok(Json(success)),
-        Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
-    }
+    SaleStatus::to_saved(id)
+        .map(|success| Json(success))
+        .map_err(|error| status::Custom(Status::InternalServerError, error.to_string()))
 }
 
 #[put("/sales/<id>/cancel", format="application/json")]
 pub fn cancel(id: i32) -> Result<Json<bool>, status::Custom<String>> {
-    match SaleStatus::to_cancelled(id) {
-        Ok(success) => Ok(Json(success)),
-        Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
-    }
+    SaleStatus::to_cancelled(id)
+        .map(|success| Json(success))
+        .map_err(|error| status::Custom(Status::InternalServerError, error.to_string()))
 }
 
 #[delete("/sales/<id>", format="application/json")]
 pub fn delete(id: i32) -> Result<Json<usize>, status::Custom<String>> {
-    match Sale::delete(id) {
-        Ok(qid) => Ok(Json(qid)),
-        Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
-    }
+    Sale::delete(id)
+        .map(|success| Json(success))
+        .map_err(|error| status::Custom(Status::InternalServerError, error.to_string()))
 }

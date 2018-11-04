@@ -91,8 +91,8 @@ pub fn show(product: &Product, client: &Client) {
     let sale = create_sale(&product, client);
     let mut response = client.get(format!("/sales/{}", sale.id)).dispatch();
     assert_eq!(response.status(), Status::Ok);
+
     let full_sale: FullSale = serde_json::from_str(&response.body_string().unwrap()).unwrap();
-    println!("{:?}", full_sale);
     assert_eq!("Jhon", &full_sale.sale.client().unwrap().first_name.unwrap());
     assert_eq!(Money(1120), full_sale.sale.total);
 }
