@@ -22,9 +22,18 @@ use crate::schema;
 use crate::schema::sales;
 use serde_json;
 use crate::handlers::base::Search;
+use std::ops::Deref;
 
 #[derive(Serialize, Deserialize, Responder)]
 pub struct SaleList(pub Vec<Sale>);
+
+impl Deref for SaleList {
+    type Target = Vec<Sale>;
+
+    fn deref(&self) -> &Vec<Sale> {
+        &self.0
+    }
+}
 
 type BoxedQuery<'a> = 
     diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer,
