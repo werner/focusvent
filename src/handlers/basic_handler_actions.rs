@@ -71,13 +71,11 @@ macro_rules! basic_handler_actions {
         pub fn index(
             params: GetTransactionParams<$search_model>,
         ) -> Result<Json<Vec<$model>>, status::Custom<String>> {
-            match $model::list(params.limit.unwrap_or(10), params.offset.unwrap_or(0), params.search) {
-                Ok(records) => Ok(Json(records)),
-                Err(error) => Err(status::Custom(
-                    Status::InternalServerError,
-                    error.to_string(),
-                )),
-            }
+            $model::list(params.limit.unwrap_or(10),
+                         params.offset.unwrap_or(0),
+                         params.search)
+                .map(|records| Json(records))
+                .map_err(|error| status::Custom(Status::NotFound, error.to_string()))
         }
 
         pub fn index_route() -> ::rocket::Route {
@@ -153,13 +151,9 @@ macro_rules! basic_handler_actions {
         }
 
         pub fn show(id: i32) -> Result<Json<$model>, status::Custom<String>> {
-            match $model::show(id) {
-                Ok(record) => Ok(Json(record)),
-                Err(error) => Err(status::Custom(
-                    Status::InternalServerError,
-                    error.to_string(),
-                )),
-            }
+            $model::show(id)
+                .map(|record| Json(record))
+                .map_err(|error| status::Custom(Status::NotFound, error.to_string()))
         }
 
         pub fn show_route() -> ::rocket::Route {
@@ -200,14 +194,10 @@ macro_rules! basic_handler_actions {
             ::rocket::handler::Outcome::from(__req, responder)
         }
 
-        pub fn create(record: $new_model) -> Result<Json<$model>, status::Custom<String>> {
-            match $model::create(record) {
-                Ok(new_record) => Ok(Json(new_record)),
-                Err(error) => Err(status::Custom(
-                    Status::InternalServerError,
-                    error.to_string(),
-                )),
-            }
+        pub fn create(new: $new_model) -> Result<Json<$model>, status::Custom<String>> {
+            $model::create(new) 
+                .map(|record| Json(record))
+                .map_err(|error| status::Custom(Status::InternalServerError, error.to_string()))
         }
 
         pub fn create_route() -> ::rocket::Route {
@@ -291,14 +281,10 @@ macro_rules! basic_handler_actions {
             ::rocket::handler::Outcome::from(__req, responder)
         }
 
-        pub fn update(id: i32, record: $model) -> Result<Json<$model>, status::Custom<String>> {
-            match $model::update(id, record) {
-                Ok(updated_record) => Ok(Json(updated_record)),
-                Err(error) => Err(status::Custom(
-                    Status::InternalServerError,
-                    error.to_string(),
-                )),
-            }
+        pub fn update(id: i32, edit: $model) -> Result<Json<$model>, status::Custom<String>> {
+            $model::update(id, edit)
+                .map(|record| Json(record))
+                .map_err(|error| status::Custom(Status::InternalServerError, error.to_string()))
         }
 
         pub fn update_route() -> ::rocket::Route {
@@ -374,13 +360,9 @@ macro_rules! basic_handler_actions {
         }
 
         pub fn delete(id: i32) -> Result<Json<usize>, status::Custom<String>> {
-            match $model::delete(id) {
-                Ok(qid) => Ok(Json(qid)),
-                Err(error) => Err(status::Custom(
-                    Status::InternalServerError,
-                    error.to_string(),
-                )),
-            }
+            $model::delete(id)
+                .map(|success| Json(success))
+                .map_err(|error| status::Custom(Status::InternalServerError, error.to_string()))
         }
 
         pub fn delete_route() -> ::rocket::Route {
