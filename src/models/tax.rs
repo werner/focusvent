@@ -10,7 +10,8 @@ type BoxedQuery<'a> =
     diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer, sql_types::Text, sql_types::Integer),
                                                      schema::taxes::table, diesel::pg::Pg>;
 
-#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug, Clone, AsChangeset, FromForm)]
+#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, 
+         Debug, Clone, AsChangeset, FromForm, FromData, Responder)]
 #[table_name="taxes"]
 pub struct Tax {
     pub id: i32,
@@ -18,14 +19,15 @@ pub struct Tax {
     pub percentage: i32
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, FromForm)]
+#[derive(Serialize, Deserialize, Debug, Clone, FromForm, FromData)]
 pub struct SearchTax {
     pub id: Option<i32>,
     pub name: Option<String>,
     pub percentage: Option<i32>
 }
 
-#[derive(Serialize, Deserialize, Insertable, Eq, PartialEq, Hash, Debug)]
+#[derive(Serialize, Deserialize, Insertable, Eq, PartialEq, Hash,
+         Debug, FromData, Responder)]
 #[table_name="taxes"]
 pub struct NewTax {
     pub name: String,

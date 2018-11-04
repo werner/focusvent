@@ -188,7 +188,7 @@ macro_rules! basic_handler_actions {
             __data: ::rocket::Data,
         ) -> ::rocket::handler::Outcome<'_b> {
             #[allow(non_snake_case, unreachable_patterns)]
-            let rocket_param_record: crate::data_guards::from_data::RequestResource<$new_model> =
+            let rocket_param_record: $new_model =
                 match ::rocket::data::FromData::from_data(__req, __data) {
                     ::rocket::Outcome::Success(d) => d,
                     ::rocket::Outcome::Forward(d) => return ::rocket::Outcome::Forward(d),
@@ -200,8 +200,8 @@ macro_rules! basic_handler_actions {
             ::rocket::handler::Outcome::from(__req, responder)
         }
 
-        pub fn create(record: crate::data_guards::from_data::RequestResource<$new_model>) -> Result<Json<$model>, status::Custom<String>> {
-            match $model::create(record.0) {
+        pub fn create(record: $new_model) -> Result<Json<$model>, status::Custom<String>> {
+            match $model::create(record) {
                 Ok(new_record) => Ok(Json(new_record)),
                 Err(error) => Err(status::Custom(
                     Status::InternalServerError,
@@ -279,7 +279,7 @@ macro_rules! basic_handler_actions {
                 }
             };
             #[allow(non_snake_case, unreachable_patterns)]
-            let rocket_param_record: crate::data_guards::from_data::RequestResource<$model> =
+            let rocket_param_record: $model =
                 match ::rocket::data::FromData::from_data(__req, __data) {
                     ::rocket::Outcome::Success(d) => d,
                     ::rocket::Outcome::Forward(d) => return ::rocket::Outcome::Forward(d),
@@ -291,8 +291,8 @@ macro_rules! basic_handler_actions {
             ::rocket::handler::Outcome::from(__req, responder)
         }
 
-        pub fn update(id: i32, record: crate::data_guards::from_data::RequestResource<$model>) -> Result<Json<$model>, status::Custom<String>> {
-            match $model::update(id, record.0) {
+        pub fn update(id: i32, record: $model) -> Result<Json<$model>, status::Custom<String>> {
+            match $model::update(id, record) {
                 Ok(updated_record) => Ok(Json(updated_record)),
                 Err(error) => Err(status::Custom(
                     Status::InternalServerError,

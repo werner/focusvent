@@ -26,10 +26,6 @@ impl Money {
     fn to_f64(&self) -> f64 {
         self.0 as f64 / 100.0
     }
-
-    fn from_f64(value: f64) -> Self {
-        Money(Self::to_i32_from_f64(value))
-    }
 }
 
 impl<'de> Deserialize<'de> for Money {

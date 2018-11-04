@@ -6,7 +6,6 @@ use crate::models::product::FullProduct;
 use crate::models::product::Product;
 use crate::models::product::SearchProduct;
 use crate::models::product::FullNewProduct;
-use crate::data_guards::from_data::RequestResource;
 
 #[get("/products?<params>")]
 pub fn index(params: GetTransactionParams<SearchProduct>) -> Result<Json<Vec<Product>>, status::Custom<String>> {
@@ -25,16 +24,16 @@ pub fn show(id: i32) -> Result<Json<FullProduct>, status::Custom<String>> {
 }
 
 #[post("/products", format="application/json", data="<request>")]
-pub fn create(request: RequestResource<FullNewProduct>) -> Result<Json<Product>, status::Custom<String>> {
-    match Product::create(request.0) {
+pub fn create(request: FullNewProduct) -> Result<Json<Product>, status::Custom<String>> {
+    match Product::create(request) {
         Ok(product) => Ok(Json(product)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
     }
 }
 
 #[put("/products/<id>", format="application/json", data="<request>")]
-pub fn update(id: i32, request: RequestResource<FullNewProduct>) -> Result<Json<Product>, status::Custom<String>> {
-    match Product::update(id, request.0) {
+pub fn update(id: i32, request: FullNewProduct) -> Result<Json<Product>, status::Custom<String>> {
+    match Product::update(id, request) {
         Ok(product) => Ok(Json(product)),
         Err(error) => Err(status::Custom(Status::InternalServerError, error.to_string()))
     }

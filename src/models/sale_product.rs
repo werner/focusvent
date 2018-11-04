@@ -9,7 +9,7 @@ use crate::models::db_connection::*;
 use crate::models::item_calculation::ItemCalculation;
 
 #[derive(AsChangeset, Insertable, Serialize, Deserialize, Clone, PartialEq, Identifiable, Associations,
-         Queryable, Debug, FromForm)]
+         Queryable, Debug, FromForm, FromData, Responder)]
 pub struct SaleProduct {
     pub id: i32,
     pub sale_id: i32,
@@ -26,7 +26,7 @@ pub struct SaleProduct {
     pub observation: Option<String>,
 }
 
-#[derive(Insertable, Serialize, Deserialize, Clone, Debug, FromForm)]
+#[derive(Insertable, Serialize, Deserialize, Clone, Debug, FromForm, FromData)]
 #[table_name="sale_products"]
 pub struct NewSaleProduct {
     pub sale_id: Option<i32>,
@@ -43,7 +43,7 @@ pub struct NewSaleProduct {
     pub observation: Option<String>,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, FromForm)]
+#[derive(Serialize, Deserialize, Debug, Clone, FromForm, Responder)]
 pub struct SearchSaleProduct {
     pub id: Option<i32>,
     pub sale_id: Option<i32>,

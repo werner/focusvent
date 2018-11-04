@@ -18,7 +18,8 @@ type BoxedQuery<'a> =
                                                      sql_types::Nullable<sql_types::Text>),
                                                      schema::suppliers::table, diesel::pg::Pg>;
 
-#[derive(Serialize, Deserialize, Clone, Queryable, Debug, AsChangeset, FromForm)]
+#[derive(Serialize, Deserialize, Clone, Queryable, 
+         Debug, AsChangeset, FromForm, FromData, Responder)]
 pub struct Supplier {
     pub id: i32,
     pub first_name: Option<String>,
@@ -28,7 +29,7 @@ pub struct Supplier {
     pub phone: Option<String>
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, FromForm)]
+#[derive(Serialize, Deserialize, Clone, Debug, FromForm, FromData, Responder)]
 pub struct SearchSupplier {
     pub id: Option<i32>,
     pub first_name: Option<String>,
@@ -38,7 +39,7 @@ pub struct SearchSupplier {
     pub phone: Option<String>
 }
 
-#[derive(Serialize, Deserialize, Insertable, Debug)]
+#[derive(Serialize, Deserialize, Insertable, Debug, FromData, Responder)]
 #[table_name="suppliers"]
 pub struct NewSupplier {
     pub first_name: Option<String>,

@@ -10,19 +10,21 @@ type BoxedQuery<'a> =
     diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer, sql_types::Text),
                                                      schema::prices::table, diesel::pg::Pg>;
 
-#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, Debug, Clone, AsChangeset, FromForm)]
+#[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash, 
+         Debug, Clone, AsChangeset, FromForm, FromData, Responder)]
 pub struct Price {
     pub id: i32,
     pub name: String
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, FromForm)]
+#[derive(Serialize, Deserialize, Debug, Clone, FromForm, Responder)]
 pub struct SearchPrice {
     pub id: Option<i32>,
     pub name: Option<String>
 }
 
-#[derive(Serialize, Deserialize, Insertable, Eq, PartialEq, Hash, Debug)]
+#[derive(Serialize, Deserialize, Insertable, Eq, PartialEq, Hash, 
+         Debug, FromData, Responder)]
 #[table_name="prices"]
 pub struct NewPrice {
     pub name: String

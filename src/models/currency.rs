@@ -22,7 +22,7 @@ type BoxedQuery<'a> = diesel::query_builder::BoxedSelectStatement<
     diesel::pg::Pg,
 >;
 
-#[derive(Serialize, Deserialize, Clone, Debug, Queryable, AsChangeset, FromForm)]
+#[derive(Serialize, Deserialize, Clone, Debug, Queryable, AsChangeset, FromForm, FromData, Responder)]
 #[table_name = "currencies"]
 pub struct Currency {
     pub id: i32,
@@ -34,7 +34,7 @@ pub struct Currency {
     pub in_use: bool,
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, FromForm)]
+#[derive(Serialize, Deserialize, Debug, Clone, FromForm, Responder)]
 pub struct SearchCurrency {
     id: Option<i32>,
     value: Option<String>,
@@ -45,7 +45,7 @@ pub struct SearchCurrency {
     in_use: Option<bool>,
 }
 
-#[derive(Serialize, Deserialize, Insertable, Eq, PartialEq, Hash, Debug)]
+#[derive(Serialize, Deserialize, Insertable, Eq, PartialEq, Hash, Debug, FromData)]
 #[table_name = "currencies"]
 pub struct NewCurrency {
     value: String,

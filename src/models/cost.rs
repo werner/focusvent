@@ -11,19 +11,20 @@ type BoxedQuery<'a> =
                                                      schema::costs::table, diesel::pg::Pg>;
 
 #[derive(Serialize, Deserialize, Queryable, Eq, PartialEq, Hash,
-         Debug, AsChangeset, FromForm)]
+         Debug, AsChangeset, FromForm, FromData, Responder)]
 pub struct Cost {
     pub id: i32,
     pub name: String
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone, FromForm)]
+#[derive(Serialize, Deserialize, Debug, Clone, FromForm, Responder)]
 pub struct SearchCost {
     pub id: Option<i32>,
     pub name: Option<String>
 }
 
-#[derive(Serialize, Deserialize, Insertable, Eq, PartialEq, Hash, Debug)]
+#[derive(Serialize, Deserialize, Insertable, Eq, PartialEq, Hash,
+         Debug, FromData, Responder)]
 #[table_name="costs"]
 pub struct NewCost {
     pub name: String

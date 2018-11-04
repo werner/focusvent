@@ -15,7 +15,7 @@ use crate::models::supplier::Supplier;
 use crate::schema;
 use crate::schema::products;
 
-#[derive(Serialize, Deserialize, Clone, Queryable, Debug, FromForm)]
+#[derive(Serialize, Deserialize, Clone, Queryable, Debug, FromForm, FromData, Responder)]
 pub struct Product {
     pub id: i32,
     pub name: String,
@@ -24,7 +24,7 @@ pub struct Product {
     pub code: Option<String>
 }
 
-#[derive(Serialize, Deserialize, Debug, FromForm)]
+#[derive(Serialize, Deserialize, Debug, FromForm, Responder)]
 pub struct SearchProduct {
     pub id: Option<i32>,
     pub name: Option<String>,
@@ -33,7 +33,7 @@ pub struct SearchProduct {
     pub code: Option<String>
 }
 
-#[derive(Serialize, Deserialize, Insertable, Debug, Clone)]
+#[derive(Serialize, Deserialize, Insertable, Debug, Clone, Responder)]
 #[table_name="products"]
 pub struct NewProduct {
     pub name: String,
@@ -41,7 +41,7 @@ pub struct NewProduct {
     pub code: Option<String>
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, FromData)]
 pub struct FullNewProduct {
     product: NewProduct,
     prices: Vec<EditableProductPrice>,

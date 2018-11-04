@@ -19,11 +19,11 @@ extern crate chrono;
 extern crate diesel_derive_newtype;
 #[macro_use]
 extern crate diesel_derive_enum;
+#[macro_use]
+extern crate courier;
 
 pub mod handlers;
 pub mod routes;
 pub mod schema;
-#[macro_use]
-pub mod data_guards;
 #[macro_use]
 pub mod models;

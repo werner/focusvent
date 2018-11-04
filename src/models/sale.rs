@@ -39,7 +39,8 @@ type BoxedQuery<'a> =
                                                      ),
                                                      schema::sales::table, diesel::pg::Pg>;
 
-#[derive(AsChangeset, Insertable, Serialize, Deserialize, Clone, Queryable, Debug, FromForm)]
+#[derive(AsChangeset, Insertable, Serialize, Deserialize, Clone, Queryable, 
+         Debug, FromForm, Responder)]
 #[table_name="sales"]
 pub struct Sale {
     pub id: i32,
@@ -74,7 +75,7 @@ pub struct NewSale {
     pub expiring_date: Option<NaiveDateForm>
 }
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Responder)]
 pub struct FullSale {
     pub sale: Sale,
     pub sale_products: Vec<SaleProduct>
