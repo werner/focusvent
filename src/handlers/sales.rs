@@ -6,14 +6,14 @@ use crate::models::sale::Sale;
 use crate::models::sale::FullSale;
 use crate::models::sale::FullNewSale;
 use crate::models::sale::SearchSale;
-use crate::models::sale::SaleList;
 use crate::models::sale_status::SaleStatus;
 
 #[get("/sales?<params>")]
-pub fn index(params: GetTransactionParams<SearchSale>) -> Result<SaleList, status::Custom<String>> {
+pub fn index(params: GetTransactionParams<SearchSale>) -> Result<Json<Vec<Sale>>, status::Custom<String>> {
     Sale::list(params.limit.unwrap_or(10),
                params.offset.unwrap_or(0),
                params.search)
+        .map(|sales| Json(sales))
         .map_err(|error| status::Custom(Status::NotFound, error.to_string()))
 }
 

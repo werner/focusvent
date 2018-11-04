@@ -13,7 +13,6 @@ use focusvent::models::client;
 use focusvent::models::product::Product;
 use focusvent::models::sale::Sale;
 use focusvent::models::sale::FullSale;
-use focusvent::models::sale::SaleList;
 use focusvent::models::currency::Currency;
 
 fn create_currency(client: &Client) -> Currency {
@@ -98,13 +97,13 @@ pub fn show(product: &Product, client: &Client) {
     assert_eq!(Money(1120), full_sale.sale.total);
 }
 
-pub fn index(product: &Product, client: &Client) {
+pub fn index(product: &Product, product2: &Product, client: &Client) {
     create_sale(&product, client);
-    create_sale(&product, client);
-    let mut response = client.get("/sales").dispatch();
+    create_sale(&product2, client);
+    let mut response = client.get("/sales?offset=0&limit=10").dispatch();
     assert_eq!(response.status(), Status::Ok);
 
-    let full_sale_list: SaleList = serde_json::from_str(&response.body_string().unwrap()).unwrap();
+    let full_sale_list: Vec<Sale> = serde_json::from_str(&response.body_string().unwrap()).unwrap();
     assert_eq!("Jhon", &full_sale_list.first().unwrap().client().unwrap().first_name.unwrap());
     assert_eq!(Money(1120), full_sale_list.first().unwrap().total);
 }

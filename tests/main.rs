@@ -47,6 +47,11 @@ mod test {
         clear(&connection);
         let product = product_tests::create_product_with_price(&client);
         sale_tests::show(&product, &client);
+
+        clear(&connection);
+        let product1 = product_tests::create_product(&client);
+        let product2 = product_tests::create_product_with_price(&client);
+        sale_tests::index(&product1, &product2, &client);
     }
 
     fn clear(connection: &PgConnection) {

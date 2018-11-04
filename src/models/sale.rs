@@ -22,18 +22,6 @@ use crate::schema;
 use crate::schema::sales;
 use serde_json;
 use crate::handlers::base::Search;
-use std::ops::Deref;
-
-#[derive(Serialize, Deserialize, Responder)]
-pub struct SaleList(pub Vec<Sale>);
-
-impl Deref for SaleList {
-    type Target = Vec<Sale>;
-
-    fn deref(&self) -> &Vec<Sale> {
-        &self.0
-    }
-}
 
 type BoxedQuery<'a> = 
     diesel::query_builder::BoxedSelectStatement<'a, (sql_types::Integer,
@@ -117,7 +105,7 @@ pub struct SearchSale {
 
 impl Sale {
     pub fn list(limit: i64, offset: i64, search: Option<Search<SearchSale>>) ->
-        Result<SaleList, diesel::result::Error> {
+        Result<Vec<Sale>, diesel::result::Error> {
             let connection = establish_connection();
             
             let query = Self::searching_records(search);
@@ -126,7 +114,6 @@ impl Sale {
                 .limit(limit)
                 .offset(offset)
                 .load(&connection)
-                .map(|raw_sale_list| SaleList(raw_sale_list))
     }
 
     pub fn show(request_id: i32) -> Result<FullSale, diesel::result::Error> {

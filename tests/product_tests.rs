@@ -73,7 +73,7 @@ fn create_supplier(client: &Client) -> Supplier {
     serde_json::from_str(&response.body_string().unwrap()).unwrap()
 }
 
-fn create_product(client: &Client) -> Product {
+pub fn create_product(client: &Client) -> Product {
     let mut response = client
         .post("/products")
         .header(ContentType::JSON)
