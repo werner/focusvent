@@ -303,3 +303,13 @@ impl FromData for FullNewSale {
         }
     }
 }
+
+use rocket::response::{self, Responder, content};
+
+impl<'r> Responder<'r> for Sale {
+    fn respond_to(self, request: &Request) -> response::Result<'r> {
+        serde_json::to_string(&self)
+            .map(|value| content::Json(value).respond_to(request).unwrap())
+            .map_err(|_| Status::InternalServerError)
+    }
+}

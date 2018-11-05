@@ -25,9 +25,8 @@ pub fn show(id: i32) -> Result<Json<FullSale>, status::Custom<String>> {
 }
 
 #[post("/sales", format="application/json", data="<sale>")]
-pub fn create(sale: FullNewSale) -> Result<Json<Sale>, status::Custom<String>> {
+pub fn create(sale: FullNewSale) -> Result<Sale, status::Custom<String>> {
     Sale::create(sale)
-        .map(|sale| Json(sale))
         .map_err(|error| status::Custom(Status::InternalServerError, error.to_string()))
 }
 
